@@ -1,0 +1,686 @@
+﻿@using web.Models
+@{
+    ViewBag.Title = "Giới thiệu";
+    ViewBag.Nav = "about";
+    Layout = "~/Views/Shared/_PublicLayout.cshtml";
+
+    var departments = ViewBag.Departments as List<Department>;
+    int doctorCount = ViewBag.DoctorCount != null ? (int)ViewBag.DoctorCount : 0;
+    int patientCount = ViewBag.PatientCount != null ? (int)ViewBag.PatientCount : 0;
+    int deptCount = ViewBag.DepartmentCount != null ? (int)ViewBag.DepartmentCount : 0;
+    int apptCount = ViewBag.AppointmentCount != null ? (int)ViewBag.AppointmentCount : 0;
+}
+<style>
+    /* HERO banner lớn */
+    .ab-hero {
+        height: 420px;
+        background: linear-gradient(135deg, rgba(29,78,216,.85), rgba(14,165,233,.75)),
+                    url('@Url.Content("~/Content/images/site/about-hero.jpg")') center/cover no-repeat;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 0 20px;
+    }
+
+    .ab-hero-inner {
+        max-width: 820px;
+    }
+
+    .ab-hero-title {
+        font-size: 2.6rem;
+        font-weight: 900;
+        line-height: 1.18;
+        margin: 0 0 14px;
+        text-shadow: 0 4px 20px rgba(0,0,0,.3);
+    }
+
+    .ab-hero-sub {
+        font-size: 1.05rem;
+        line-height: 1.85;
+        color: rgba(255,255,255,.94);
+        margin: 0;
+    }
+
+    /* BREADCRUMB */
+    .ab-bc {
+        background: #f1f5f9;
+        padding: 10px 0;
+        font-size: .88rem;
+        color: #64748b;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+        .ab-bc a { color: #1d4ed8; font-weight: 600; }
+        .ab-bc span { opacity: .5; margin: 0 6px; }
+
+    /* Section intro với tagline italic + card light bg */
+    .ab-intro-block {
+        background: linear-gradient(180deg, #eff6ff, #f8fbff);
+        padding: 56px 0;
+        border-bottom: 1px solid #e5edf7;
+    }
+
+    .ab-intro-title {
+        text-align: center;
+        font-size: 1.75rem;
+        font-weight: 900;
+        color: #1d4ed8;
+        margin: 0 0 10px;
+        text-transform: uppercase;
+    }
+
+    .ab-intro-tagline {
+        text-align: center;
+        color: #2563eb;
+        font-style: italic;
+        font-weight: 600;
+        margin-bottom: 22px;
+        font-size: 1.1rem;
+    }
+
+    .ab-intro-text {
+        max-width: 920px;
+        margin: 0 auto;
+        color: #334155;
+        line-height: 1.95;
+        text-align: center;
+        font-size: .98rem;
+    }
+
+    /* Section 2-col alternating */
+    .ab-sec {
+        padding: 58px 0;
+        background: #fff;
+    }
+
+    .ab-sec.alt { background: #f4f7fb; }
+
+    .ab-sec-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 44px;
+        align-items: center;
+    }
+
+    .ab-sec-row.reverse .ab-sec-img { order: 2; }
+    .ab-sec-row.reverse .ab-sec-text { order: 1; }
+
+    .ab-sec-heading {
+        color: #1d4ed8;
+        font-size: 1.55rem;
+        font-weight: 900;
+        margin: 0 0 16px;
+        text-transform: uppercase;
+        letter-spacing: .01em;
+    }
+
+    .ab-sec-text p {
+        color: #475569;
+        line-height: 1.95;
+        margin: 0 0 14px;
+        font-size: .96rem;
+    }
+
+    .ab-sec-text p strong { color: #0f172a; }
+
+    .ab-sec-img {
+        border-radius: 22px;
+        overflow: hidden;
+        aspect-ratio: 4 / 3;
+        background: linear-gradient(135deg, #dbeafe, #eff6ff);
+        box-shadow: 0 18px 40px rgba(15,23,42,.12);
+    }
+
+        .ab-sec-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+    /* Collage 3 ảnh cho section Không gian - sửa lỗi ảnh bị cắt dọc */
+    .ab-collage {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: 220px 180px;
+        gap: 12px;
+    }
+
+    .ab-collage-cell {
+        border-radius: 18px;
+        overflow: hidden;
+        background: #eff6ff;
+        box-shadow: 0 14px 32px rgba(15,23,42,.10);
+    }
+
+        .ab-collage-cell.main {
+            grid-column: 1 / -1;
+            grid-row: auto;
+        }
+
+        .ab-collage-cell img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+    /* Ưu điểm 6 card circle icon */
+    .ab-adv-section {
+        padding: 60px 0;
+        background: #fff;
+    }
+
+    .ab-adv-head {
+        text-align: center;
+        margin-bottom: 38px;
+    }
+
+    .ab-adv-title {
+        font-size: 1.65rem;
+        font-weight: 900;
+        color: #1d4ed8;
+        text-transform: uppercase;
+        margin: 0 0 8px;
+    }
+
+    .ab-adv-sub {
+        color: #64748b;
+        max-width: 660px;
+        margin: 0 auto;
+        line-height: 1.8;
+    }
+
+    .ab-adv-grid {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 18px;
+    }
+
+    .ab-adv-card {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 18px;
+        box-shadow: 0 8px 20px rgba(15,23,42,.06);
+        padding: 24px 16px;
+        text-align: center;
+        transition: .22s ease;
+    }
+
+        .ab-adv-card:hover {
+            transform: translateY(-5px);
+            border-color: #bfdbfe;
+            box-shadow: 0 20px 36px rgba(37,99,235,.16);
+        }
+
+    .ab-adv-ico {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #1d4ed8, #0ea5e9);
+        color: #fff;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.35rem;
+        margin-bottom: 12px;
+    }
+
+    .ab-adv-name {
+        font-size: .9rem;
+        font-weight: 800;
+        color: #0f172a;
+        line-height: 1.5;
+    }
+
+    /* 6 giá trị cốt lõi ribbon number */
+    .ab-values-section {
+        padding: 66px 0;
+        background: linear-gradient(180deg, #eff6ff, #f8fbff);
+    }
+
+    .ab-values-head {
+        text-align: center;
+        margin-bottom: 38px;
+    }
+
+    .ab-values-title {
+        font-size: 1.7rem;
+        font-weight: 900;
+        color: #1d4ed8;
+        margin: 0;
+        text-transform: uppercase;
+    }
+
+    .ab-values-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 24px;
+    }
+
+    .ab-value {
+        background: #fff;
+        border-radius: 18px;
+        box-shadow: 0 10px 26px rgba(15,23,42,.08);
+        padding: 30px 26px 24px;
+        position: relative;
+    }
+
+    .ab-value-num {
+        position: absolute;
+        top: 0;
+        left: 24px;
+        color: #fff;
+        font-weight: 900;
+        font-size: 1.1rem;
+        padding: 8px 14px 16px;
+        width: 46px;
+        text-align: center;
+        clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 80%, 0 100%);
+    }
+
+    .ab-value:nth-child(1) .ab-value-num { background: #2563eb; }
+    .ab-value:nth-child(2) .ab-value-num { background: #0891b2; }
+    .ab-value:nth-child(3) .ab-value-num { background: #16a34a; }
+    .ab-value:nth-child(4) .ab-value-num { background: #d97706; }
+    .ab-value:nth-child(5) .ab-value-num { background: #ea580c; }
+    .ab-value:nth-child(6) .ab-value-num { background: #dc2626; }
+
+    .ab-value-title {
+        margin: 36px 0 12px 72px;
+        font-size: 1.06rem;
+        font-weight: 900;
+        color: #0f172a;
+        text-transform: uppercase;
+    }
+
+    .ab-value-text {
+        color: #475569;
+        line-height: 1.9;
+        font-size: .92rem;
+        margin: 0;
+    }
+
+    /* CTA bottom */
+    .ab-cta-sec {
+        background: linear-gradient(135deg, #0f172a, #1d4ed8);
+        padding: 56px 0;
+        color: #fff;
+    }
+
+    .ab-cta-inner {
+        display: flex;
+        gap: 30px;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .ab-cta-title {
+        font-size: 1.55rem;
+        font-weight: 900;
+        margin: 0 0 8px;
+    }
+
+    .ab-cta-desc {
+        margin: 0;
+        color: rgba(255,255,255,.88);
+        max-width: 620px;
+        line-height: 1.85;
+    }
+
+    .ab-cta-btns .btn {
+        font-weight: 800;
+        padding: 12px 22px;
+        border-radius: 12px;
+    }
+
+    @@media (max-width: 991px) {
+        .ab-hero { height: 320px; padding: 0 16px; }
+        .ab-hero-title { font-size: 1.85rem; }
+        .ab-sec-row { grid-template-columns: 1fr; gap: 26px; }
+        .ab-sec-row.reverse .ab-sec-img { order: 1; }
+        .ab-sec-row.reverse .ab-sec-text { order: 2; }
+        .ab-adv-grid { grid-template-columns: repeat(3, 1fr); }
+        .ab-values-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @@media (max-width: 640px) {
+        .ab-hero-title { font-size: 1.4rem; }
+        .ab-hero-sub { font-size: .92rem; }
+        .ab-intro-title { font-size: 1.3rem; }
+        .ab-sec { padding: 40px 0; }
+        .ab-sec-heading { font-size: 1.25rem; }
+        .ab-adv-grid { grid-template-columns: repeat(2, 1fr); }
+        .ab-values-grid { grid-template-columns: 1fr; }
+        .ab-cta-sec { padding: 36px 0; }
+    }
+</style>
+
+<!-- INTRO block (title + tagline italic + paragraph) -->
+<section class="ab-intro-block">
+    <div class="container">
+        <h1 class="ab-intro-title">Phòng khám Đa khoa MedicCare</h1>
+        <div class="ab-intro-tagline">An tâm người bệnh đến &mdash; Hài lòng người bệnh đi</div>
+        <p class="ab-intro-text">
+            Phòng khám Đa khoa MedicCare là cơ sở khám chữa bệnh chuyên khoa hoạt động theo hướng hiện đại hóa,
+            với đội ngũ bác sĩ chuyên khoa giàu kinh nghiệm, hệ thống trang thiết bị hiện đại làm điểm nhấn.
+            Đặc biệt, phòng khám triển khai đặt lịch trực tuyến hoàn toàn miễn phí, bệnh nhân không phải chờ đợi -
+            đây là thế mạnh giúp tối ưu hóa hoạt động khám chữa bệnh.
+        </p>
+    </div>
+</section>
+
+<!-- Về chúng tôi: ảnh trái + text phải -->
+<section class="ab-sec">
+    <div class="container">
+        <div class="ab-sec-row">
+            <div class="ab-sec-img">
+                <img src="@Url.Content("~/Content/images/site/about-1.jpg")"
+                     alt="Tòa nhà phòng khám MedicCare"
+                     onerror="this.src='@Url.Content("~/Content/images/site/home-hero.jpg")'" />
+            </div>
+            <div class="ab-sec-text">
+                <h2 class="ab-sec-heading">Về chúng tôi</h2>
+                <p>
+                    Phòng khám Đa khoa <strong>MedicCare</strong> là cơ sở đi đầu trong việc ứng dụng chăm sóc y tế
+                    theo hướng phát triển hiện đại, mô hình quản lý y tế tiên tiến, khám chữa bệnh
+                    <strong>"1 bác sĩ - 1 bệnh nhân"</strong>, chú trọng đem kỹ thuật công nghệ cao hiện đại,
+                    phấn đấu không ngừng tạo ra một phòng khám toàn diện, chính quy và hiện đại.
+                </p>
+                <p>
+                    Đặc biệt phòng khám luôn lấy <strong>chất lượng chẩn đoán, điều trị và dịch vụ y tế</strong>
+                    làm nền tảng cho sự tồn tại và phát triển. Chúng tôi cam kết bảo vệ và chăm lo sức khỏe cho
+                    cộng đồng, đồng hành cùng người dân trên hành trình hướng tới một cuộc sống khỏe mạnh và
+                    hạnh phúc. Chúng tôi tự hào là nơi mang đến sự yên tâm, chăm sóc tận tình cho mỗi bệnh nhân,
+                    giúp họ vượt qua mọi khó khăn về sức khỏe.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 6 Ưu điểm phòng khám -->
+<section class="ab-adv-section">
+    <div class="container">
+        <div class="ab-adv-head">
+            <h2 class="ab-adv-title">Ưu điểm phòng khám</h2>
+            <p class="ab-adv-sub">
+                6 ưu điểm nổi bật tạo nên sự khác biệt của MedicCare trong trải nghiệm khám chữa bệnh của bạn.
+            </p>
+        </div>
+
+        <div class="ab-adv-grid">
+            <div class="ab-adv-card">
+                <div class="ab-adv-ico"><i class="fas fa-clinic-medical"></i></div>
+                <div class="ab-adv-name">Phòng khám tiện nghi khang trang, sạch sẽ vô trùng</div>
+            </div>
+
+            <div class="ab-adv-card">
+                <div class="ab-adv-ico"><i class="fas fa-microscope"></i></div>
+                <div class="ab-adv-name">Trang bị cơ sở vật chất tiên tiến, hiện đại</div>
+            </div>
+
+            <div class="ab-adv-card">
+                <div class="ab-adv-ico"><i class="fas fa-user-doctor"></i></div>
+                <div class="ab-adv-name">Đội ngũ y bác sĩ dày dạn kinh nghiệm</div>
+            </div>
+
+            <div class="ab-adv-card">
+                <div class="ab-adv-ico"><i class="fas fa-shield-halved"></i></div>
+                <div class="ab-adv-name">Bảo mật tuyệt đối thông tin bệnh nhân</div>
+            </div>
+
+            <div class="ab-adv-card">
+                <div class="ab-adv-ico"><i class="fas fa-stethoscope"></i></div>
+                <div class="ab-adv-name">Phương pháp điều trị hiệu quả, ít biến chứng</div>
+            </div>
+
+            <div class="ab-adv-card">
+                <div class="ab-adv-ico"><i class="fas fa-sack-dollar"></i></div>
+                <div class="ab-adv-name">Chi phí điều trị công khai, minh bạch</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Chuyên khoa đa dạng: text trái + ảnh phải -->
+<section class="ab-sec alt">
+    <div class="container">
+        <div class="ab-sec-row">
+            <div class="ab-sec-text">
+                <h2 class="ab-sec-heading">Chuyên khoa đa dạng</h2>
+                <p>
+                    Minh chứng cho sự phát triển và khát vọng thực hiện mục tiêu mang lại dịch vụ y tế đầy đủ,
+                    chuyên sâu nhất cho người dân Hà Nội và các tỉnh lân cận, phòng khám MedicCare cung cấp đầy đủ
+                    <strong>@deptCount chuyên khoa</strong> chính, đáp ứng nhu cầu khám bệnh đa dạng từ trẻ em
+                    đến người cao tuổi.
+                </p>
+                <p>
+                    Các chuyên khoa trọng tâm gồm: Nội tổng quát, Nhi khoa, Tim mạch, Da liễu, Tai Mũi Họng,
+                    Cơ xương khớp, Tiêu hóa, Sản phụ khoa&hellip; Mỗi chuyên khoa đều có bác sĩ phụ trách
+                    được đào tạo chuyên sâu với nhiều năm kinh nghiệm lâm sàng.
+                </p>
+            </div>
+
+            <div class="ab-sec-img">
+                <img src="@Url.Content("~/Content/images/site/about-2.jpg")"
+                     alt="Chuyên khoa đa dạng"
+                     onerror="this.src='@Url.Content("~/Content/images/site/home-hero.jpg")'" />
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Đội ngũ bác sĩ hùng hậu: ảnh trái + text phải -->
+<section class="ab-sec">
+    <div class="container">
+        <div class="ab-sec-row">
+            <div class="ab-sec-img">
+                <img src="@Url.Content("~/Content/images/site/about-doctors.jpg")"
+                     alt="Đội ngũ bác sĩ"
+                     onerror="this.src='@Url.Content("~/Content/images/site/home-hero.jpg")'" />
+            </div>
+            <div class="ab-sec-text">
+                <h2 class="ab-sec-heading">Đội ngũ bác sĩ hùng hậu</h2>
+                <p>
+                    Phòng khám có <strong>@doctorCount bác sĩ</strong> chuyên khoa, quy tụ các bác sĩ là chuyên gia,
+                    có học hàm cao <strong>Phó Giáo sư, Tiến sĩ, Bác sĩ CKII</strong> và đã từng đảm nhận
+                    nhiều chức vụ quan trọng tại các bệnh viện lớn trên cả nước.
+                </p>
+                <p>
+                    Với kinh nghiệm lâm sàng phong phú, đội ngũ bác sĩ MedicCare đảm bảo hiệu quả điều trị tối đa
+                    cũng như bảo vệ toàn diện sức khỏe thể chất và tinh thần cho đông đảo bệnh nhân đến khám
+                    và chữa bệnh.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Kỹ thuật tiên tiến: text trái + ảnh phải -->
+<section class="ab-sec alt">
+    <div class="container">
+        <div class="ab-sec-row">
+            <div class="ab-sec-text">
+                <h2 class="ab-sec-heading">Kỹ thuật tiên tiến, hiện đại</h2>
+                <p>
+                    Phòng khám MedicCare sử dụng các <strong>thiết bị y tế hiện đại</strong> và phương pháp điều trị
+                    công nghệ cao, chủ yếu được nhập khẩu từ các nước có nền y học lớn trên thế giới, giúp tăng tối đa
+                    hiệu quả phát hiện bệnh sớm, điều trị bệnh mang lại hiệu quả cao, giảm tối đa tỉ lệ tái phát.
+                </p>
+                <p>
+                    Các thiết bị đều được kiểm định chặt chẽ trước khi đưa vào sử dụng, mang đến nền tảng đảm bảo
+                    chuyên môn vững chắc cho quá trình điều trị, đồng thời là đơn vị tiên phong trong lĩnh vực y tế.
+                </p>
+            </div>
+
+            <div class="ab-sec-img">
+                <img src="@Url.Content("~/Content/images/site/about-tech.jpg")"
+                     alt="Trang thiết bị hiện đại"
+                     onerror="this.src='@Url.Content("~/Content/images/site/home-hero.jpg")'" />
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Không gian lý tưởng: collage trái + text phải -->
+<section class="ab-sec">
+    <div class="container">
+        <div class="ab-sec-row">
+            <div class="ab-collage">
+                <div class="ab-collage-cell main">
+                    <img src="@Url.Content("~/Content/images/site/gallery_1.jpg")"
+                         alt="Sảnh phòng khám"
+                         onerror="this.src='@Url.Content("~/Content/images/site/home-hero.jpg")'" />
+                </div>
+                <div class="ab-collage-cell">
+                    <img src="@Url.Content("~/Content/images/site/gallery_2.jpg")"
+                         alt="Phòng chờ"
+                         onerror="this.src='@Url.Content("~/Content/images/site/home-hero.jpg")'" />
+                </div>
+                <div class="ab-collage-cell">
+                    <img src="@Url.Content("~/Content/images/site/gallery_3.jpg")"
+                         alt="Không gian khám"
+                         onerror="this.src='@Url.Content("~/Content/images/site/home-hero.jpg")'" />
+                </div>
+            </div>
+
+            <div class="ab-sec-text">
+                <h2 class="ab-sec-heading">Không gian lý tưởng, tiện nghi</h2>
+                <p>
+                    Tại MedicCare xây dựng không gian mở, tận dụng tối đa ánh sáng tự nhiên tạo cảm giác thoải mái
+                    và dễ chịu cho người bệnh. Các phòng khoa được thiết kế chuyên biệt, đảm bảo sự riêng tư tối đa
+                    trong quá trình thăm khám và điều trị.
+                </p>
+                <p>
+                    Phòng khám có không gian rộng rãi, môi trường thoải mái giúp quá trình điều trị đạt hiệu quả cao,
+                    quá trình hồi phục bệnh được rút ngắn, người bệnh nhanh chóng trở lại cuộc sống bình thường.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Phục vụ tận tâm: text trái + ảnh phải -->
+<section class="ab-sec alt">
+    <div class="container">
+        <div class="ab-sec-row">
+            <div class="ab-sec-text">
+                <h2 class="ab-sec-heading">Phục vụ tận tâm</h2>
+                <p>
+                    Trong suốt thời gian dài hoạt động, phòng khám luôn kiên định thực hiện chính sách
+                    <strong>thu phí công khai, hợp lý, bình dân</strong>, đồng thời lấy chất lượng khám chữa bệnh
+                    và chất lượng dịch vụ là hướng đi cốt lõi cho sự phát triển.
+                </p>
+                <p>
+                    Minh chứng bằng việc phòng khám đã xây dựng đội ngũ bác sĩ chuyên môn chất lượng cao, tận tâm
+                    với người bệnh và nhận được sự ủng hộ rộng rãi từ người bệnh. Thời gian tới, phòng khám tiếp tục
+                    lấy sự hài lòng của người bệnh làm trung tâm, không ngừng nâng cao chất lượng dịch vụ y tế.
+                </p>
+            </div>
+
+            <div class="ab-sec-img">
+                <img src="@Url.Content("~/Content/images/site/about-care.jpg")"
+                     alt="Phục vụ tận tâm"
+                     onerror="this.src='@Url.Content("~/Content/images/site/home-hero.jpg")'" />
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 6 Giá trị cốt lõi với ribbon number -->
+<section class="ab-values-section">
+    <div class="container">
+        <div class="ab-values-head">
+            <h2 class="ab-values-title">6 Giá trị cốt lõi tại MedicCare</h2>
+        </div>
+
+        <div class="ab-values-grid">
+            <div class="ab-value">
+                <div class="ab-value-num">01</div>
+                <div class="ab-value-title">Trung thực</div>
+                <p class="ab-value-text">
+                    Khẳng định chất lượng của mình sẽ tạo dựng niềm tin với xã hội, người bệnh, nhân viên và đồng nghiệp.
+                </p>
+            </div>
+
+            <div class="ab-value">
+                <div class="ab-value-num">02</div>
+                <div class="ab-value-title">Yêu thương</div>
+                <p class="ab-value-text">
+                    Luôn lấy con người làm trung tâm, đối xử với người bệnh bằng lòng nhân ái, chăm lo nhân viên bằng sự quan tâm.
+                </p>
+            </div>
+
+            <div class="ab-value">
+                <div class="ab-value-num">03</div>
+                <div class="ab-value-title">Chuyên nghiệp</div>
+                <p class="ab-value-text">
+                    Xây dựng theo hướng quản lý tinh gọn, kỹ thuật y tế tinh thông, thiết bị tiên tiến và đội ngũ tinh nhuệ.
+                </p>
+            </div>
+
+            <div class="ab-value">
+                <div class="ab-value-num">04</div>
+                <div class="ab-value-title">Cống hiến</div>
+                <p class="ab-value-text">
+                    Nhân viên phòng khám yêu nghề, tận tụy với công việc, sẵn sàng cống hiến hết lòng phục vụ người bệnh.
+                </p>
+            </div>
+
+            <div class="ab-value">
+                <div class="ab-value-num">05</div>
+                <div class="ab-value-title">Hài hòa</div>
+                <p class="ab-value-text">
+                    Phòng khám luôn nỗ lực đảm bảo sự hài hòa giữa bác sĩ và bệnh nhân, giữa các khoa phòng và trong gia đình.
+                </p>
+            </div>
+
+            <div class="ab-value">
+                <div class="ab-value-num">06</div>
+                <div class="ab-value-title">Đổi mới</div>
+                <p class="ab-value-text">
+                    Liên tục đổi mới trong quản lý, cập nhật dịch vụ và kỹ thuật mới; không ngừng vượt qua chính mình.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Tiện lợi nhanh chóng: text trái + CTA phải -->
+<section class="ab-sec">
+    <div class="container">
+        <div class="ab-sec-row">
+            <div class="ab-sec-text">
+                <h2 class="ab-sec-heading">Tiện lợi, nhanh chóng</h2>
+                <p>
+                    Hướng tới đổi mới trong quản lý y tế, áp dụng công nghệ 4.0, Phòng khám MedicCare
+                    <strong>quản lý hồ sơ bệnh án bằng công nghệ hiện đại</strong>, kết quả xét nghiệm được thông báo
+                    với người bệnh qua cổng thông tin điện tử nhanh chóng, chính xác, tiết kiệm thời gian.
+                </p>
+                <p>
+                    Người bệnh dễ dàng đặt lịch online 24/7, tra cứu lại lịch hẹn bằng CCCD hoặc số điện thoại
+                    mà không phải xếp hàng, không phải chờ đợi.
+                </p>
+                <div class="d-flex gap-2 flex-wrap mt-3">
+                    <a href="@Url.Action("Create", "Booking")" class="btn btn-primary">
+                        <i class="fas fa-calendar-check me-2"></i>Đặt lịch ngay
+                    </a>
+                    <a href="@Url.Action("Doctors", "Home")" class="btn btn-outline-primary">
+                        <i class="fas fa-user-doctor me-2"></i>Xem đội ngũ bác sĩ
+                    </a>
+                </div>
+            </div>
+
+            <div class="ab-sec-img">
+                <img src="@Url.Content("~/Content/images/site/about-booking.jpg")"
+                     alt="Đặt lịch online"
+                     onerror="this.src='@Url.Content("~/Content/images/site/home-hero.jpg")'" />
+            </div>
+        </div>
+    </div>
+</section>
+

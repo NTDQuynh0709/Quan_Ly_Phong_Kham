@@ -1,0 +1,420 @@
+﻿@model IEnumerable<web.Models.Doctor>
+
+@{
+    ViewBag.Title = "Quản lý bác sĩ";
+    ViewBag.Ctrl = "Doctor";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<style>
+    .dr-stat {
+        border-radius: 16px;
+        padding: 16px 18px;
+        color: #fff;
+        height: 100%;
+    }
+
+        .dr-stat .val {
+            font-size: 1.6rem;
+            font-weight: 800;
+            line-height: 1.1;
+        }
+
+        .dr-stat .lbl {
+            font-size: .84rem;
+            opacity: .9;
+            margin-top: 4px;
+        }
+
+    .dr-blue {
+        background: linear-gradient(135deg, #2563eb, #3b82f6);
+    }
+
+    .dr-green {
+        background: linear-gradient(135deg, #16a34a, #22c55e);
+    }
+
+    .dr-slate {
+        background: linear-gradient(135deg, #475569, #64748b);
+    }
+
+    .doctor-cell {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 260px;
+    }
+
+    .doctor-avatar {
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        overflow: hidden;
+        background: #eff6ff;
+        border: 2px solid #dbeafe;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #2563eb;
+        font-size: 1.1rem;
+        font-weight: 800;
+    }
+
+        .doctor-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center 20%;  /* căn lệch lên trên để hiện rõ mặt, không bị mất phần mặt như khi center mặc định */
+        }
+
+    .doctor-name {
+        font-weight: 800;
+        color: #0f172a;
+        line-height: 1.4;
+    }
+
+    .doctor-sub {
+        color: #64748b;
+        font-size: .82rem;
+        margin-top: 2px;
+    }
+
+    .fee-pill {
+        display: inline-block;
+        padding: 6px 10px;
+        background: #eff6ff;
+        color: #1d4ed8;
+        border-radius: 999px;
+        font-weight: 700;
+        font-size: .82rem;
+        white-space: nowrap;
+    }
+
+    .exp-text {
+        font-weight: 700;
+        color: #0f172a;
+    }
+
+    .contact-line {
+        font-size: .84rem;
+        color: #334155;
+        line-height: 1.7;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 220px;
+    }
+
+        .contact-line i {
+            width: 15px;
+            color: #94a3b8;
+            margin-right: 6px;
+        }
+
+    /* ===== Bảng bác sĩ: không xuống dòng header/badge + căn giữa các cột ngắn ===== */
+    .doctor-tbl thead th {
+        white-space: nowrap;
+        vertical-align: middle;
+        text-align: center;
+    }
+
+    .doctor-tbl tbody td {
+        vertical-align: middle;
+    }
+
+        /* Căn giữa NGANG cho các cột ngắn:
+           2=Khoa, 4=Giá khám, 5=Kinh nghiệm, 7=Trạng thái, 8=Thao tác */
+        .doctor-tbl thead th:nth-child(2),
+        .doctor-tbl thead th:nth-child(4),
+        .doctor-tbl thead th:nth-child(5),
+        .doctor-tbl thead th:nth-child(7),
+        .doctor-tbl thead th:nth-child(8),
+        .doctor-tbl tbody td:nth-child(2),
+        .doctor-tbl tbody td:nth-child(4),
+        .doctor-tbl tbody td:nth-child(5),
+        .doctor-tbl tbody td:nth-child(7),
+        .doctor-tbl tbody td:nth-child(8) {
+            text-align: center;
+        }
+
+        .doctor-tbl tbody td:nth-child(2) {
+            white-space: nowrap;
+            font-weight: 600;
+            color: #0f172a;
+        }
+
+        /* Cột 3 (Chuyên môn + lịch làm việc): giới hạn bề ngang để lịch dài không đẩy bảng */
+        .doctor-tbl thead th:nth-child(3),
+        .doctor-tbl tbody td:nth-child(3) {
+            max-width: 260px;
+            min-width: 200px;
+        }
+
+    /* Mỗi dòng lịch trên 1 hàng riêng, icon thẳng cột với text */
+    .schedule-line {
+        display: flex;
+        align-items: flex-start;
+        gap: 6px;
+        font-size: .82rem;
+        color: #475569;
+        line-height: 1.55;
+        margin-top: 2px;
+    }
+
+        .schedule-line i {
+            color: #94a3b8;
+            margin-top: 4px;
+            flex-shrink: 0;
+            font-size: .78rem;
+        }
+
+        .schedule-line span {
+            white-space: nowrap;
+        }
+
+        /* Cột 6 (Liên hệ): giới hạn bề ngang, email/phone dài sẽ ...ellipsis */
+        .doctor-tbl thead th:nth-child(6),
+        .doctor-tbl tbody td:nth-child(6) {
+            max-width: 220px;
+        }
+
+    .doctor-tbl .bs {
+        white-space: nowrap;
+    }
+</style>
+
+<div class="pg-hd">
+    <h4><i class="fas fa-user-doctor me-2"></i>Quản lý bác sĩ</h4>
+    <a href="@Url.Action("Create", "Doctor")" class="btn btn-primary">
+        <i class="fas fa-plus me-2"></i>Thêm bác sĩ
+    </a>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">
+        <i class="fas fa-check-circle me-2"></i>@TempData["Success"]
+    </div>
+}
+
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+        <div class="dr-stat dr-blue">
+            <div class="val">@ViewBag.TotalCount</div>
+            <div class="lbl">Tổng bác sĩ</div>
+        </div>
+    </div>
+
+    <div class="col-6 col-lg-3">
+        <div class="dr-stat dr-green">
+            <div class="val">@ViewBag.ActiveCount</div>
+            <div class="lbl">Đang hoạt động</div>
+        </div>
+    </div>
+
+    <div class="col-6 col-lg-3">
+        <div class="dr-stat dr-slate">
+            <div class="val">@ViewBag.InactiveCount</div>
+            <div class="lbl">Ngưng hoạt động</div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header">
+        <i class="fas fa-search me-2 text-primary"></i>Tìm kiếm &amp; lọc bác sĩ
+    </div>
+    <div class="card-body">
+        @using (Html.BeginForm("Index", "Doctor", FormMethod.Get))
+        {
+            <div class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label" style="font-size:.85rem;font-weight:600">Từ khóa</label>
+                    <input type="text"
+                           name="q"
+                           value="@ViewBag.Query"
+                           class="form-control"
+                           placeholder="Họ tên, chuyên khoa, SĐT, email..." />
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label" style="font-size:.85rem;font-weight:600">Khoa</label>
+                    @Html.DropDownList("departmentId", ViewBag.DepartmentList as SelectList, "Tất cả khoa",
+                                       new { @class = "form-select" })
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label" style="font-size:.85rem;font-weight:600">Trạng thái</label>
+                    <select name="status" class="form-select">
+                        <option value="" @(string.IsNullOrEmpty(ViewBag.Status as string) ? "selected" : "")>Tất cả</option>
+                        <option value="active" @(ViewBag.Status as string == "active" ? "selected" : "")>Hoạt động</option>
+                        <option value="inactive" @(ViewBag.Status as string == "inactive" ? "selected" : "")>Ngưng</option>
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label" style="font-size:.85rem;font-weight:600">Sắp xếp</label>
+                    <select name="sort" class="form-select">
+                        <option value="" @(string.IsNullOrEmpty(ViewBag.Sort as string) ? "selected" : "")>Tên A-Z</option>
+                        <option value="fee_asc" @(ViewBag.Sort as string == "fee_asc" ? "selected" : "")>Giá thấp → cao</option>
+                        <option value="fee_desc" @(ViewBag.Sort as string == "fee_desc" ? "selected" : "")>Giá cao → thấp</option>
+                        <option value="exp_desc" @(ViewBag.Sort as string == "exp_desc" ? "selected" : "")>Kinh nghiệm nhất</option>
+                    </select>
+                </div>
+
+                <div class="col-md-1">
+                    <button type="submit" class="btn btn-primary w-100" title="Lọc">
+                        <i class="fas fa-filter"></i>
+                    </button>
+                </div>
+            </div>
+
+            bool hasFilter = !string.IsNullOrWhiteSpace(ViewBag.Query as string)
+                          || (ViewBag.DepartmentId as int?) > 0
+                          || !string.IsNullOrEmpty(ViewBag.Status as string)
+                          || !string.IsNullOrEmpty(ViewBag.Sort as string);
+            if (hasFilter)
+            {
+                <div style="margin-top:10px;font-size:.84rem;color:#64748b">
+                    <i class="fas fa-circle-info me-1"></i>
+                    Tìm thấy <strong>@ViewBag.FilteredCount</strong> / @ViewBag.TotalCount bác sĩ.
+                    <a href="@Url.Action("Index", "Doctor")" class="ms-2" style="color:#dc2626;text-decoration:underline">
+                        <i class="fas fa-xmark me-1"></i>Xóa bộ lọc
+                    </a>
+                </div>
+            }
+        }
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="fas fa-list-ul me-2 text-primary"></i>Danh sách bác sĩ</span>
+        <span style="font-size:.82rem;color:#64748b">@Model.Count() bác sĩ</span>
+    </div>
+
+    <div class="card-body p-0">
+        @if (!Model.Any())
+        {
+            <div class="empty-state">
+                <i class="fas fa-user-doctor"></i>
+                <p>Không có bác sĩ nào phù hợp.</p>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+            <table class="tbl doctor-tbl">
+                <thead>
+                    <tr>
+                        <th>Bác sĩ</th>
+                        <th>Khoa</th>
+                        <th>Giờ khám</th>
+                        <th>Giá khám</th>
+                        <th>Kinh nghiệm</th>
+                        <th>Liên hệ</th>
+                        <th>Trạng thái</th>
+                        <th style="width:110px">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var d in Model)
+                    {
+                        <tr>
+                            <td>
+                                <div class="doctor-cell">
+                                    <div class="doctor-avatar">
+                                        <img src="@web.Helpers.DoctorAvatarHelper.GetAvatarUrl(d.ImageUrl, d.FullName)"
+                                             alt="@d.FullName"
+                                             onerror="this.onerror=null;this.src='@web.Helpers.DoctorAvatarHelper.GetAvatarDataUri(d.FullName)'" />
+                                    </div>
+
+                                    <div>
+                                        <div class="doctor-name">@d.FullName</div>
+                                        <div class="doctor-sub">@(string.IsNullOrWhiteSpace(d.Degree) ? "Bác sĩ" : d.Degree)</div>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <td>
+                                @(d.Department != null ? d.Department.DepartmentName : "—")
+                            </td>
+
+                            <td>
+                                @{
+                                    string deptName = d.Department != null ? d.Department.DepartmentName : "";
+                                    bool specialtyIsDifferent = !string.IsNullOrWhiteSpace(d.Specialty)
+                                        && !string.Equals(d.Specialty.Trim(), deptName.Trim(), StringComparison.OrdinalIgnoreCase);
+
+                                    var scheduleParts = string.IsNullOrWhiteSpace(d.WorkSchedule)
+                                        ? new string[0]
+                                        : d.WorkSchedule.Split(';').Select(s => s.Trim()).Where(s => s.Length > 0).ToArray();
+                                }
+                                @if (specialtyIsDifferent)
+                                {
+                                    <div style="font-weight:700;color:#0f172a;margin-bottom:4px">@d.Specialty</div>
+                                }
+                                @if (scheduleParts.Length == 0)
+                                {
+                                    <div class="schedule-line">
+                                        <i class="fas fa-clock"></i><span>Chưa cập nhật lịch</span>
+                                    </div>
+                                }
+                                else
+                                {
+                                    foreach (var part in scheduleParts)
+                                    {
+                                        <div class="schedule-line">
+                                            <i class="fas fa-clock"></i><span>@part</span>
+                                        </div>
+                                    }
+                                }
+                            </td>
+
+                            <td>
+                                <span class="fee-pill">
+                                    @String.Format("{0:N0} đ", d.ConsultationFee)
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="exp-text">
+                                    @(d.YearsOfExperience.HasValue ? d.YearsOfExperience + " năm" : "—")
+                                </span>
+                            </td>
+
+                            <td>
+                                <div class="contact-line">
+                                    <i class="fas fa-phone"></i>@(string.IsNullOrWhiteSpace(d.Phone) ? "—" : d.Phone)
+                                </div>
+                                <div class="contact-line">
+                                    <i class="fas fa-envelope"></i>@(string.IsNullOrWhiteSpace(d.Email) ? "—" : d.Email)
+                                </div>
+                            </td>
+
+                            <td>
+                                @if (d.IsActive)
+                                {
+                                    <span class="bs bs-active">Hoạt động</span>
+                                }
+                                else
+                                {
+                                    <span class="bs bs-inactive">Ngưng hoạt động</span>
+                                }
+                            </td>
+
+                            <td>
+                                <a href="@Url.Action("Edit", "Doctor", new { id = d.Id })"
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-pen me-1"></i>Sửa
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            </div>
+        }
+    </div>
+</div>

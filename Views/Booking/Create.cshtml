@@ -1,0 +1,712 @@
+﻿@using web.Models
+@{
+    ViewBag.Title = "Đặt lịch khám";
+    ViewBag.Nav = "booking";
+    Layout = "~/Views/Shared/_PublicLayout.cshtml";
+
+    var selectedDoctor = ViewBag.SelectedDoctor as Doctor;
+
+    string dobValue = "";
+    if (ViewBag.FormDateOfBirth != null)
+    {
+        DateTime temp;
+        if (DateTime.TryParse(ViewBag.FormDateOfBirth.ToString(), out temp))
+        {
+            dobValue = temp.ToString("yyyy-MM-dd");
+        }
+    }
+
+    string apptDateValue = "";
+    if (ViewBag.FormAppointmentDate != null)
+    {
+        DateTime temp;
+        if (DateTime.TryParse(ViewBag.FormAppointmentDate.ToString(), out temp))
+        {
+            apptDateValue = temp.ToString("yyyy-MM-dd");
+        }
+    }
+
+    string selectedDoctorId = ViewBag.FormDoctorId != null
+        ? ViewBag.FormDoctorId.ToString()
+        : (selectedDoctor != null ? selectedDoctor.Id.ToString() : "");
+
+    string selectedTimeSlot = ViewBag.FormTimeSlot != null ? ViewBag.FormTimeSlot.ToString() : "";
+}
+
+<style>
+    .booking-hero {
+        background: linear-gradient(135deg, #1d4ed8, #0ea5e9);
+        color: #fff;
+        padding: 54px 0 40px;
+    }
+
+    .booking-hero-title {
+        font-size: 2.25rem;
+        font-weight: 900;
+        margin-bottom: 10px;
+    }
+
+    .booking-hero-desc {
+        max-width: 780px;
+        line-height: 1.9;
+        color: rgba(255,255,255,.92);
+        margin: 0;
+    }
+
+    .booking-wrap {
+        background: #f8fafc;
+        padding: 40px 0 68px;
+    }
+
+    .booking-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.2fr) 390px;
+        gap: 24px;
+        align-items: start;
+    }
+
+    .booking-card,
+    .booking-side-card {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 24px;
+        box-shadow: 0 12px 26px rgba(15,23,42,.06);
+    }
+
+    .booking-card {
+        padding: 22px;
+    }
+
+    .booking-side-card {
+        overflow: hidden;
+        position: sticky;
+        top: 96px;
+    }
+
+    .booking-side-top {
+        padding: 18px 18px 10px;
+        border-bottom: 1px solid #eef2f7;
+    }
+
+    .booking-side-body {
+        padding: 18px;
+    }
+
+    .booking-sec-title {
+        font-size: .78rem;
+        font-weight: 900;
+        color: #2563eb;
+        text-transform: uppercase;
+        letter-spacing: .06em;
+        margin-bottom: 14px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .booking-doctor-card {
+        display: grid;
+        grid-template-columns: 88px 1fr;
+        gap: 14px;
+        align-items: start;
+    }
+
+    .booking-doctor-avatar {
+        width: 88px;
+        height: 88px;
+        border-radius: 20px;
+        overflow: hidden;
+        background: #eff6ff;
+        border: 2px solid #dbeafe;
+    }
+
+        .booking-doctor-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+    .booking-doctor-name {
+        font-size: 1.05rem;
+        font-weight: 900;
+        color: #0f172a;
+        margin-bottom: 3px;
+    }
+
+    .booking-doctor-degree {
+        color: #2563eb;
+        font-weight: 700;
+        font-size: .9rem;
+        margin-bottom: 6px;
+    }
+
+    .booking-doctor-sub {
+        color: #64748b;
+        font-size: .86rem;
+        line-height: 1.8;
+        margin-bottom: 8px;
+    }
+
+    .booking-meta {
+        display: grid;
+        gap: 10px;
+        margin-top: 14px;
+    }
+
+    .booking-meta-item {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        padding: 11px 12px;
+    }
+
+    .booking-meta-label {
+        font-size: .74rem;
+        color: #64748b;
+        font-weight: 800;
+        margin-bottom: 4px;
+        text-transform: uppercase;
+        letter-spacing: .04em;
+    }
+
+    .booking-meta-value {
+        color: #0f172a;
+        font-weight: 800;
+        line-height: 1.7;
+    }
+
+    .booking-summary-box {
+        background: linear-gradient(135deg, #eff6ff, #f8fbff);
+        border: 1px solid #dbeafe;
+        border-radius: 18px;
+        padding: 16px;
+        margin-top: 16px;
+    }
+
+    .booking-summary-label {
+        color: #64748b;
+        font-size: .8rem;
+        font-weight: 800;
+        margin-bottom: 4px;
+    }
+
+    .booking-summary-value {
+        color: #0f172a;
+        font-size: 1.6rem;
+        font-weight: 900;
+    }
+
+    .booking-note {
+        margin-top: 16px;
+        padding: 14px 16px;
+        border-radius: 16px;
+        background: #fff7ed;
+        border: 1px solid #fed7aa;
+        color: #9a3412;
+        font-size: .86rem;
+        line-height: 1.75;
+    }
+
+    .booking-field-group + .booking-field-group {
+        margin-top: 22px;
+    }
+
+    .booking-help {
+        font-size: .78rem;
+        color: #64748b;
+        margin-top: 6px;
+    }
+
+    @@media (max-width: 991px) {
+        .booking-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .booking-side-card {
+            position: static;
+        }
+    }
+</style>
+
+<section class="booking-hero">
+    <div class="container">
+        <div class="booking-hero-title">Đặt lịch khám trực tuyến</div>
+        <p class="booking-hero-desc">
+            Chọn bác sĩ, ngày khám và khung giờ phù hợp. Hệ thống sẽ tự hiển thị thông tin chuyên môn,
+            lịch làm việc và chi phí khám để bệnh nhân dễ quyết định hơn trước khi gửi yêu cầu.
+        </p>
+    </div>
+</section>
+
+<section class="booking-wrap">
+    <div class="container">
+        @{
+            var allErrors = ViewData.ModelState
+                .Where(kv => kv.Value.Errors.Count > 0)
+                .SelectMany(kv => kv.Value.Errors.Select(e => e.ErrorMessage))
+                .Where(m => !string.IsNullOrWhiteSpace(m))
+                .Distinct()
+                .ToList();
+        }
+        @if (allErrors.Count > 0)
+        {
+            <div class="alert alert-danger mb-4" style="border-radius:14px">
+                <div style="font-weight:800;margin-bottom:6px">
+                    <i class="fas fa-circle-exclamation me-2"></i>Vui lòng kiểm tra lại các thông tin sau:
+                </div>
+                <ul style="margin:0;padding-left:22px">
+                    @foreach (var msg in allErrors)
+                    {
+                        <li>@msg</li>
+                    }
+                </ul>
+            </div>
+        }
+
+        <div class="booking-grid">
+            <div class="booking-card">
+                @using (Html.BeginForm("Create", "Booking", FormMethod.Post, new { novalidate = "novalidate" }))
+                {
+                    @Html.AntiForgeryToken()
+
+                    <div class="booking-field-group">
+                        <div class="booking-sec-title">Thông tin bệnh nhân</div>
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Họ và tên <span style="color:red">*</span></label>
+                                <input type="text" name="fullName" class="form-control"
+                                       value="@ViewBag.FormFullName"
+                                       placeholder="Nhập họ tên bệnh nhân"
+                                       required
+                                       maxlength="100"
+                                       pattern="^[^0-9]+$"
+                                       title="Họ tên không được chứa chữ số." />
+                                @Html.ValidationMessage("fullName", "", new { @class = "text-danger" })
+                            </div>
+
+                            <div class="col-md-3">
+                                <label class="form-label">Ngày sinh</label>
+                                <input type="text" name="dateOfBirth" id="dobInput" class="form-control"
+                                       value="@dobValue"
+                                       placeholder="dd/mm/yyyy"
+                                       autocomplete="off"
+                                       data-max-date="@DateTime.Today.AddDays(-1).ToString("yyyy-MM-dd")"
+                                       data-min-date="1900-01-01" />
+                                @Html.ValidationMessage("dateOfBirth", "", new { @class = "text-danger" })
+                            </div>
+
+                            <div class="col-md-3">
+                                <label class="form-label">Giới tính</label>
+                                <select name="gender" class="form-select">
+                                    <option value="">Chọn giới tính</option>
+                                    <option value="Nam" @(ViewBag.FormGender != null && ViewBag.FormGender.ToString() == "Nam" ? "selected" : "")>Nam</option>
+                                    <option value="Nữ" @(ViewBag.FormGender != null && ViewBag.FormGender.ToString() == "Nữ" ? "selected" : "")>Nữ</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">CCCD <span style="color:red">*</span></label>
+                                <input type="text" name="cccd" class="form-control"
+                                       value="@ViewBag.FormCCCD"
+                                       placeholder="Nhập đúng 12 chữ số CCCD"
+                                       required
+                                       minlength="12"
+                                       maxlength="12"
+                                       pattern="[0-9]{12}"
+                                       inputmode="numeric"
+                                       title="CCCD phải gồm đúng 12 chữ số, không có chữ." />
+                                @Html.ValidationMessage("cccd", "", new { @class = "text-danger" })
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Số điện thoại <span style="color:red">*</span></label>
+                                <input type="tel" name="phone" class="form-control"
+                                       value="@ViewBag.FormPhone"
+                                       placeholder="VD: 0912345678"
+                                       required
+                                       minlength="10"
+                                       maxlength="10"
+                                       pattern="0[3-9][0-9]{8}"
+                                       inputmode="numeric"
+                                       title="Số điện thoại phải gồm 10 chữ số, bắt đầu bằng 03/05/07/08/09." />
+                                @Html.ValidationMessage("phone", "", new { @class = "text-danger" })
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Email</label>
+                                <input type="email" name="email" class="form-control" value="@ViewBag.FormEmail" placeholder="email@gmail.com" />
+                                @Html.ValidationMessage("email", "", new { @class = "text-danger" })
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Địa chỉ</label>
+                                <input type="text" name="address" class="form-control" value="@ViewBag.FormAddress" placeholder="Nhập địa chỉ" />
+                                @Html.ValidationMessage("address", "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="booking-field-group">
+                        <div class="booking-sec-title">Thông tin lịch hẹn</div>
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Chọn chuyên khoa</label>
+                                @Html.DropDownList("departmentFilter", ViewBag.Departments as SelectList, "Tất cả chuyên khoa", new { @class = "form-select", id = "deptSelect" })
+                                <div class="booking-help">Chọn khoa để lọc danh sách bác sĩ bên dưới.</div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Chọn bác sĩ <span style="color:red">*</span></label>
+                                @{
+                                    var doctorsRaw = ViewBag.DoctorsRaw as List<web.Models.Doctor>;
+                                    int? selectedDocId = ViewBag.FormDoctorId as int?;
+                                }
+                                <select name="doctorId" id="doctorSelect" class="form-select" required>
+                                    <option value="">-- Chọn bác sĩ --</option>
+                                    @if (doctorsRaw != null)
+                                    {
+                                        foreach (var doc in doctorsRaw)
+                                        {
+                                            <option value="@doc.Id"
+                                                    data-dept="@(doc.DepartmentId ?? 0)"
+                                                    @(selectedDocId == doc.Id ? "selected" : "")>
+                                                @doc.FullName @(doc.Department != null ? " - " + doc.Department.DepartmentName : "")
+                                            </option>
+                                        }
+                                    }
+                                </select>
+                                @Html.ValidationMessage("doctorId", "", new { @class = "text-danger" })
+                            </div>
+
+                            <div class="col-md-3">
+                                <label class="form-label">Ngày khám <span style="color:red">*</span></label>
+                                <input type="text"
+                                       name="appointmentDate"
+                                       id="appointmentDate"
+                                       class="form-control"
+                                       value="@apptDateValue"
+                                       required
+                                       placeholder="dd/mm/yyyy"
+                                       autocomplete="off"
+                                       data-min-date="@DateTime.Today.ToString("yyyy-MM-dd")"
+                                       title="Vui lòng chọn ngày khám từ hôm nay trở đi." />
+                                @Html.ValidationMessage("appointmentDate", "", new { @class = "text-danger" })
+                            </div>
+
+                            <div class="col-md-3">
+                                <label class="form-label">Khung giờ <span style="color:red">*</span></label>
+                                @Html.DropDownList("timeSlot", ViewBag.TimeSlots as SelectList, "Chọn giờ khám", new { @class = "form-select", id = "timeSlotSelect", required = "required" })
+                                @Html.ValidationMessage("timeSlot", "", new { @class = "text-danger" })
+                                <div class="booking-help">Giờ đã kín sẽ tự động bị khóa.</div>
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label">Ghi chú thêm</label>
+                                <textarea name="note" rows="4" class="form-control" placeholder="Mô tả ngắn triệu chứng hoặc yêu cầu khám...">@ViewBag.FormNote</textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-3 flex-wrap mt-4">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-calendar-check me-2"></i>Gửi yêu cầu đặt lịch
+                        </button>
+
+                        <a href="@Url.Action("Doctors", "Home")" class="btn btn-outline-secondary btn-lg">
+                            <i class="fas fa-user-doctor me-2"></i>Xem thêm bác sĩ
+                        </a>
+                    </div>
+                }
+            </div>
+
+            <div class="booking-side-card">
+                <div class="booking-side-top">
+                    <div style="font-size:1.02rem;font-weight:900;color:#0f172a;">Thông tin bác sĩ đã chọn</div>
+                    <div style="color:#64748b;font-size:.88rem;margin-top:4px;">
+                        Hệ thống sẽ tự cập nhật khi bạn đổi bác sĩ ở form bên trái.
+                    </div>
+                </div>
+
+                <div class="booking-side-body">
+                    <div id="doctorPreview">
+                        @if (selectedDoctor != null)
+                        {
+                            var img = web.Helpers.DoctorAvatarHelper.GetAvatarUrl(selectedDoctor.ImageUrl, selectedDoctor.FullName);
+                            var imgFallback = web.Helpers.DoctorAvatarHelper.GetAvatarDataUri(selectedDoctor.FullName);
+
+                            <div class="booking-doctor-card">
+                                <div class="booking-doctor-avatar">
+                                    <img src="@img" alt="@selectedDoctor.FullName"
+                                         onerror="this.onerror=null;this.src='@imgFallback'" />
+                                </div>
+                                <div>
+                                    <div class="booking-doctor-name">@selectedDoctor.FullName</div>
+                                    <div class="booking-doctor-degree">@(string.IsNullOrWhiteSpace(selectedDoctor.Degree) ? "Bác sĩ" : selectedDoctor.Degree)</div>
+                                    <div class="booking-doctor-sub">
+                                        @(selectedDoctor.Department != null ? selectedDoctor.Department.DepartmentName : "Chưa cập nhật khoa")
+                                        · @(string.IsNullOrWhiteSpace(selectedDoctor.Specialty) ? "Chưa cập nhật chuyên môn" : selectedDoctor.Specialty)
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="booking-meta">
+                                <div class="booking-meta-item">
+                                    <div class="booking-meta-label">Kinh nghiệm</div>
+                                    <div class="booking-meta-value">@((selectedDoctor.YearsOfExperience ?? 0)) năm</div>
+                                </div>
+                                <div class="booking-meta-item">
+                                    <div class="booking-meta-label">Lịch làm việc</div>
+                                    <div class="booking-meta-value">@(string.IsNullOrWhiteSpace(selectedDoctor.WorkSchedule) ? "Chưa cập nhật" : selectedDoctor.WorkSchedule)</div>
+                                </div>
+                            </div>
+
+                            <div class="booking-summary-box">
+                                <div class="booking-summary-label">Chi phí khám dự kiến</div>
+                                <div class="booking-summary-value">@String.Format("{0:N0} đ", selectedDoctor.ConsultationFee)</div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div style="text-align:center;color:#64748b;padding:30px 10px;">
+                                <i class="fas fa-user-doctor" style="font-size:2rem;color:#94a3b8;margin-bottom:10px;display:block;"></i>
+                                Chọn bác sĩ để xem thông tin chi tiết, lịch làm việc và mức phí khám.
+                            </div>
+                        }
+                    </div>
+
+                    <div class="booking-note">
+                        <strong>Lưu ý:</strong> Sau khi đặt lịch thành công, bạn có thể dùng <strong>CCCD</strong> hoặc
+                        <strong>số điện thoại</strong> để tra cứu lại lịch hẹn ở màn hình tra cứu.
+                    </div>
+
+                    <div class="booking-note" style="background:#eff6ff;border-color:#bfdbfe;color:#1e40af;margin-top:10px">
+                        <i class="fas fa-shield-halved me-1"></i>
+                        <strong>Bảo vệ thông tin:</strong> Nếu CCCD đã có trong hệ thống (do bạn đã khám trước đây),
+                        vui lòng nhập đúng <strong>họ tên</strong> và <strong>số điện thoại</strong> đã đăng ký.
+                        Hệ thống sẽ dùng lại hồ sơ cũ, không cho phép ghi đè thông tin qua trang đặt lịch.
+                        Muốn cập nhật thông tin, vui lòng liên hệ phòng khám.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/l10n/vn.js"></script>
+    <script>
+    (function () {
+        const doctorSelect = document.getElementById('doctorSelect');
+        const deptSelect = document.getElementById('deptSelect');
+        const dateInput = document.getElementById('appointmentDate');
+        const dobInput = document.getElementById('dobInput');
+        const timeSlotSelect = document.getElementById('timeSlotSelect');
+        const doctorPreview = document.getElementById('doctorPreview');
+        const selectedTimeSlot = '@selectedTimeSlot';
+
+        // Khởi tạo flatpickr — hiển thị dd/mm/yyyy, value gửi về server vẫn là yyyy-mm-dd
+        if (window.flatpickr) {
+            if (dobInput) {
+                flatpickr(dobInput, {
+                    dateFormat: 'Y-m-d',
+                    altInput: true,
+                    altFormat: 'd/m/Y',
+                    locale: 'vn',
+                    maxDate: dobInput.getAttribute('data-max-date') || 'today',
+                    minDate: dobInput.getAttribute('data-min-date') || '1900-01-01',
+                    allowInput: true
+                });
+            }
+            if (dateInput) {
+                flatpickr(dateInput, {
+                    dateFormat: 'Y-m-d',
+                    altInput: true,
+                    altFormat: 'd/m/Y',
+                    locale: 'vn',
+                    minDate: dateInput.getAttribute('data-min-date') || 'today',
+                    allowInput: true
+                });
+            }
+        }
+
+        // Lọc bác sĩ theo khoa đã chọn
+        function filterDoctorsByDept() {
+            if (!deptSelect || !doctorSelect) return;
+            const deptId = deptSelect.value;
+            const currentVal = doctorSelect.value;
+            let firstMatchingValue = '';
+            let hasCurrentInDept = false;
+
+            Array.from(doctorSelect.options).forEach(function (opt) {
+                if (!opt.value) {
+                    opt.hidden = false;
+                    return;
+                }
+                const optDept = opt.getAttribute('data-dept');
+                if (!deptId || optDept === deptId) {
+                    opt.hidden = false;
+                    if (!firstMatchingValue) firstMatchingValue = opt.value;
+                    if (opt.value === currentVal) hasCurrentInDept = true;
+                } else {
+                    opt.hidden = true;
+                }
+            });
+
+            // Nếu bác sĩ đang chọn không thuộc khoa đã chọn → reset về trống
+            if (deptId && currentVal && !hasCurrentInDept) {
+                doctorSelect.value = '';
+                doctorSelect.dispatchEvent(new Event('change'));
+            }
+        }
+
+        if (deptSelect) {
+            deptSelect.addEventListener('change', filterDoctorsByDept);
+        }
+
+        // Khi mount page: nếu đã có doctor selected → auto set dept theo doctor đó
+        (function initDeptFromDoctor() {
+            if (!doctorSelect || !deptSelect) return;
+            const sel = doctorSelect.options[doctorSelect.selectedIndex];
+            if (sel && sel.value) {
+                const deptId = sel.getAttribute('data-dept');
+                if (deptId && deptId !== '0') {
+                    deptSelect.value = deptId;
+                }
+            }
+            filterDoctorsByDept();
+        })();
+
+        function formatCurrency(value) {
+            try {
+                return new Intl.NumberFormat('vi-VN').format(value) + ' đ';
+            } catch (e) {
+                return value + ' đ';
+            }
+        }
+
+        function renderDoctorPlaceholder() {
+            doctorPreview.innerHTML = `
+                <div style="text-align:center;color:#64748b;padding:30px 10px;">
+                    <i class="fas fa-user-doctor" style="font-size:2rem;color:#94a3b8;margin-bottom:10px;display:block;"></i>
+                    Chọn bác sĩ để xem thông tin chi tiết, lịch làm việc và mức phí khám.
+                </div>
+            `;
+        }
+
+        function renderDoctorCard(data) {
+            const fb = data.fallbackUrl || '';
+            doctorPreview.innerHTML = `
+                <div class="booking-doctor-card">
+                    <div class="booking-doctor-avatar">
+                        <img src="${data.imageUrl}" alt="${data.fullName}"
+                             onerror="this.onerror=null;this.src='${fb}'" />
+                    </div>
+                    <div>
+                        <div class="booking-doctor-name">${data.fullName || ''}</div>
+                        <div class="booking-doctor-degree">${data.degree || 'Bác sĩ'}</div>
+                        <div class="booking-doctor-sub">
+                            ${(data.departmentName || 'Chưa cập nhật khoa')} · ${(data.specialty || 'Chưa cập nhật chuyên môn')}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="booking-meta">
+                    <div class="booking-meta-item">
+                        <div class="booking-meta-label">Kinh nghiệm</div>
+                        <div class="booking-meta-value">${(data.yearsOfExperience || 0)} năm</div>
+                    </div>
+                    <div class="booking-meta-item">
+                        <div class="booking-meta-label">Lịch làm việc</div>
+                        <div class="booking-meta-value">${data.workSchedule || 'Chưa cập nhật'}</div>
+                    </div>
+                </div>
+
+                <div class="booking-summary-box">
+                    <div class="booking-summary-label">Chi phí khám dự kiến</div>
+                    <div class="booking-summary-value">${data.consultationFeeText || formatCurrency(data.consultationFee || 0)}</div>
+                </div>
+            `;
+        }
+
+        async function loadDoctorInfo() {
+            const id = doctorSelect.value;
+            if (!id) {
+                renderDoctorPlaceholder();
+                return;
+            }
+
+            try {
+                const response = await fetch('@Url.Action("GetDoctorInfo", "Booking")?id=' + encodeURIComponent(id));
+                const data = await response.json();
+
+                if (data && data.success) {
+                    renderDoctorCard(data);
+                } else {
+                    renderDoctorPlaceholder();
+                }
+            } catch (e) {
+                renderDoctorPlaceholder();
+            }
+        }
+
+        async function loadBusySlots() {
+            const doctorId = doctorSelect.value;
+            const date = dateInput.value;
+
+            Array.from(timeSlotSelect.options).forEach(function (opt, index) {
+                if (index === 0) return;
+                opt.disabled = false;
+                opt.text = opt.value;
+            });
+
+            if (!doctorId || !date) return;
+
+            try {
+                const url = '@Url.Action("GetBusySlots", "Booking")'
+                    + '?doctorId=' + encodeURIComponent(doctorId)
+                    + '&date=' + encodeURIComponent(date);
+
+                const response = await fetch(url);
+                const data = await response.json();
+
+                if (!data || !data.success || !Array.isArray(data.busySlots)) return;
+
+                const busySet = new Set(data.busySlots);
+
+                Array.from(timeSlotSelect.options).forEach(function (opt, index) {
+                    if (index === 0) return;
+                    if (busySet.has(opt.value)) {
+                        opt.disabled = true;
+                        opt.text = opt.value + ' - Đã kín';
+                    }
+                });
+
+                if (timeSlotSelect.value && busySet.has(timeSlotSelect.value)) {
+                    timeSlotSelect.value = '';
+                } else if (selectedTimeSlot) {
+                    const target = Array.from(timeSlotSelect.options).find(x => x.value === selectedTimeSlot && !x.disabled);
+                    if (target) {
+                        timeSlotSelect.value = selectedTimeSlot;
+                    }
+                }
+            } catch (e) {
+            }
+        }
+
+        doctorSelect.addEventListener('change', async function () {
+            await loadDoctorInfo();
+            await loadBusySlots();
+        });
+
+        dateInput.addEventListener('change', loadBusySlots);
+
+        document.addEventListener('DOMContentLoaded', async function () {
+            await loadDoctorInfo();
+            await loadBusySlots();
+        });
+    })();
+    </script>
+}

@@ -1,0 +1,131 @@
+﻿@model web.Models.Receptionist
+
+@{
+    ViewBag.Title = "Cập nhật lễ tân";
+    ViewBag.Ctrl = "Receptionist";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="pg-hd">
+    <h4><i class="fas fa-user-pen me-2"></i>Cập nhật lễ tân</h4>
+</div>
+
+<div class="card">
+    <div class="card-header"><i class="fas fa-id-card me-2 text-primary"></i>Thông tin lễ tân</div>
+    <div class="card-body">
+        @{
+            var allErrors = ViewData.ModelState
+                .Where(kv => kv.Value.Errors.Count > 0)
+                .SelectMany(kv => kv.Value.Errors.Select(e => e.ErrorMessage))
+                .Where(m => !string.IsNullOrWhiteSpace(m))
+                .Distinct()
+                .ToList();
+        }
+        @if (allErrors.Count > 0)
+        {
+            <div class="alert alert-danger mb-3" style="border-radius:12px">
+                <div style="font-weight:800;margin-bottom:6px">
+                    <i class="fas fa-circle-exclamation me-2"></i>Vui lòng kiểm tra lại các thông tin sau:
+                </div>
+                <ul style="margin:0;padding-left:22px">
+                    @foreach (var msg in allErrors)
+                    {
+                        <li>@msg</li>
+                    }
+                </ul>
+            </div>
+        }
+
+        @using (Html.BeginForm("Edit", "Receptionist", FormMethod.Post, new { novalidate = "novalidate" }))
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(m => m.Id)
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Họ và tên <span style="color:red">*</span></label>
+                    @Html.TextBoxFor(m => m.FullName, new {
+                        @class = "form-control",
+                        placeholder = "Nhập họ tên lễ tân",
+                        required = "required",
+                        maxlength = "100",
+                        pattern = "^[^0-9]+$",
+                        title = "Họ tên không được chứa chữ số."
+                    })
+                    @Html.ValidationMessageFor(m => m.FullName, "", new { @class = "text-danger" })
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Số điện thoại <span style="color:red">*</span></label>
+                    @Html.TextBoxFor(m => m.Phone, new {
+                        @class = "form-control",
+                        type = "tel",
+                        placeholder = "0901234567",
+                        required = "required",
+                        minlength = "10",
+                        maxlength = "10",
+                        pattern = "0[3-9][0-9]{8}",
+                        inputmode = "numeric",
+                        title = "SĐT phải gồm 10 chữ số, đầu 03/05/07/08/09."
+                    })
+                    @Html.ValidationMessageFor(m => m.Phone, "", new { @class = "text-danger" })
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Email</label>
+                    @Html.TextBoxFor(m => m.Email, new {
+                        @class = "form-control",
+                        type = "email",
+                        placeholder = "email@example.com"
+                    })
+                    @Html.ValidationMessageFor(m => m.Email, "", new { @class = "text-danger" })
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Giới tính</label>
+                    <select name="Gender" class="form-select">
+                        <option value="">Chọn giới tính</option>
+                        <option value="Nam" @(Model.Gender == "Nam" ? "selected" : "")>Nam</option>
+                        <option value="Nữ" @(Model.Gender == "Nữ" ? "selected" : "")>Nữ</option>
+                    </select>
+                    @Html.ValidationMessageFor(m => m.Gender, "", new { @class = "text-danger" })
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Ngày sinh</label>
+                    @Html.TextBoxFor(m => m.DateOfBirth, "{0:yyyy-MM-dd}", new {
+                        @class = "form-control",
+                        type = "date",
+                        max = DateTime.Today.AddDays(-1).ToString("yyyy-MM-dd"),
+                        min = "1900-01-01"
+                    })
+                    @Html.ValidationMessageFor(m => m.DateOfBirth, "", new { @class = "text-danger" })
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Địa chỉ</label>
+                    @Html.TextBoxFor(m => m.Address, new { @class = "form-control", placeholder = "Nhập địa chỉ" })
+                    @Html.ValidationMessageFor(m => m.Address, "", new { @class = "text-danger" })
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Trạng thái</label>
+                    <div class="form-check mt-2">
+                        @Html.CheckBoxFor(m => m.IsActive, new { @class = "form-check-input", id = "IsActive" })
+                        <label class="form-check-label" for="IsActive">Đang hoạt động</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex flex-wrap gap-3 mt-4">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save me-2"></i>Lưu thay đổi
+                </button>
+
+                <a href="@Url.Action("Index", "Receptionist")" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Quay lại danh sách
+                </a>
+            </div>
+        }
+    </div>
+</div>

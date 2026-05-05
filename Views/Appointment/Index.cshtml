@@ -1,0 +1,617 @@
+﻿@model IEnumerable<web.Models.Appointment>
+@{
+    ViewBag.Title = "Quản lý lịch khám";
+    ViewBag.Ctrl = "Appointment";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    var role = (Session["UserRole"] ?? "").ToString();
+    var userName = (Session["UserName"] ?? "Người dùng").ToString();
+    string initial = !string.IsNullOrWhiteSpace(userName) ? userName.Substring(0, 1).ToUpper() : "U";
+    string shortName = userName.Contains(" ") ? userName.Split(' ').Last() : userName;
+
+    DateTime now = DateTime.Now;
+    string greeting = now.Hour < 12 ? "Chào buổi sáng" : (now.Hour < 18 ? "Chào buổi chiều" : "Chào buổi tối");
+
+    string today = DateTime.Today.ToString("yyyy-MM-dd");
+    string yesterday = DateTime.Today.AddDays(-1).ToString("yyyy-MM-dd");
+    string tomorrow = DateTime.Today.AddDays(1).ToString("yyyy-MM-dd");
+    string selectedDate = ViewBag.SelectedDate ?? today;
+
+    DateTime parsedSelectedDate;
+    if (!DateTime.TryParseExact(selectedDate, "yyyy-MM-dd",
+            System.Globalization.CultureInfo.InvariantCulture,
+            System.Globalization.DateTimeStyles.None, out parsedSelectedDate))
+    {
+        parsedSelectedDate = DateTime.Today;
+        selectedDate = today;
+    }
+
+    string roleLabel = role == "Admin" ? "Quản trị viên"
+                     : role == "Receptionist" ? "Lễ tân"
+                     : role;
+}
+
+<style>
+    /* WELCOME */
+    .ap-welcome {
+        background: linear-gradient(135deg, #1d4ed8, #0ea5e9);
+        border-radius: 22px;
+        padding: 24px 28px;
+        color: #fff;
+        margin-bottom: 20px;
+        display: flex;
+        gap: 20px;
+        align-items: center;
+        box-shadow: 0 16px 32px rgba(29,78,216,.22);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .ap-welcome::after {
+        content: "";
+        position: absolute;
+        right: -40px;
+        bottom: -40px;
+        width: 180px;
+        height: 180px;
+        border-radius: 50%;
+        background: rgba(255,255,255,.1);
+    }
+
+    .ap-avatar {
+        width: 72px;
+        height: 72px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, rgba(255,255,255,.25), rgba(255,255,255,.12));
+        border: 3px solid rgba(255,255,255,.35);
+        color: #fff;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        font-weight: 900;
+        flex-shrink: 0;
+    }
+
+    .ap-welcome-text {
+        flex: 1;
+        position: relative;
+        z-index: 2;
+    }
+
+    .ap-greeting { font-size: .88rem; opacity: .92; margin-bottom: 4px; }
+
+    .ap-name {
+        font-size: 1.45rem;
+        font-weight: 900;
+        margin-bottom: 4px;
+    }
+
+    .ap-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+        color: rgba(255,255,255,.92);
+        font-size: .86rem;
+    }
+
+    .ap-today-badge {
+        background: rgba(255,255,255,.16);
+        border: 1px solid rgba(255,255,255,.26);
+        border-radius: 14px;
+        padding: 10px 16px;
+        text-align: center;
+        min-width: 130px;
+        position: relative;
+        z-index: 2;
+    }
+
+    .ap-today-lbl { font-size: .74rem; opacity: .86; text-transform: uppercase; letter-spacing: .04em; }
+    .ap-today-val { font-size: 1.08rem; font-weight: 900; margin-top: 2px; }
+
+    /* STATS 5 card */
+    .ap-stats {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 14px;
+        margin-bottom: 20px;
+    }
+
+    .ap-stat {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 18px;
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        box-shadow: 0 8px 20px rgba(15,23,42,.05);
+        transition: .2s ease;
+    }
+
+        .ap-stat:hover { transform: translateY(-2px); box-shadow: 0 12px 24px rgba(15,23,42,.09); }
+
+    .ap-stat-ico {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        color: #fff;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+        flex-shrink: 0;
+    }
+
+    .ap-stat.s1 .ap-stat-ico { background: linear-gradient(135deg,#2563eb,#60a5fa); }
+    .ap-stat.s2 .ap-stat-ico { background: linear-gradient(135deg,#d97706,#fbbf24); }
+    .ap-stat.s3 .ap-stat-ico { background: linear-gradient(135deg,#16a34a,#4ade80); }
+    .ap-stat.s4 .ap-stat-ico { background: linear-gradient(135deg,#4f46e5,#6366f1); }
+    .ap-stat.s5 .ap-stat-ico { background: linear-gradient(135deg,#dc2626,#ef4444); }
+
+    .ap-stat-val {
+        font-size: 1.35rem;
+        font-weight: 900;
+        color: #0f172a;
+        line-height: 1;
+    }
+
+    .ap-stat-lbl {
+        color: #64748b;
+        font-size: .8rem;
+        font-weight: 600;
+        margin-top: 3px;
+    }
+
+    /* QUICK DATE PILLS + filter */
+    .ap-filter-card {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 18px 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 8px 20px rgba(15,23,42,.05);
+    }
+
+    .ap-pills {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 14px;
+    }
+
+    .ap-pill {
+        background: #f1f5f9;
+        color: #475569;
+        border: 1px solid #e2e8f0;
+        border-radius: 999px;
+        padding: 7px 14px;
+        font-size: .86rem;
+        font-weight: 700;
+        text-decoration: none;
+        transition: .15s ease;
+    }
+
+        .ap-pill:hover { background: #eff6ff; color: #1d4ed8; }
+        .ap-pill.active {
+            background: linear-gradient(135deg,#1d4ed8,#0ea5e9);
+            color: #fff;
+            border-color: transparent;
+            box-shadow: 0 4px 10px rgba(29,78,216,.3);
+        }
+
+    /* TABLE card */
+    .ap-list-card {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        box-shadow: 0 8px 20px rgba(15,23,42,.05);
+        overflow: hidden;
+    }
+
+    .ap-list-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 20px;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .ap-list-title {
+        font-weight: 800;
+        color: #0f172a;
+    }
+
+    .ap-list-sub { color: #64748b; font-size: .84rem; }
+
+    .ap-tbl {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+        .ap-tbl thead th {
+            background: #f8fafc;
+            color: #64748b;
+            font-size: .72rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            padding: 13px 16px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .ap-tbl tbody td {
+            padding: 14px 16px;
+            vertical-align: middle;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: .88rem;
+            color: #334155;
+        }
+
+        .ap-tbl tbody tr:hover { background: #f8fafc; }
+        .ap-tbl tbody tr:last-child td { border-bottom: none; }
+
+        /* Left border tint theo status */
+        .ap-tbl tbody tr.row-pending td:first-child { box-shadow: inset 3px 0 0 #f59e0b; }
+        .ap-tbl tbody tr.row-confirmed td:first-child { box-shadow: inset 3px 0 0 #16a34a; }
+        .ap-tbl tbody tr.row-done td:first-child { box-shadow: inset 3px 0 0 #4f46e5; }
+        .ap-tbl tbody tr.row-cancelled td:first-child { box-shadow: inset 3px 0 0 #dc2626; }
+
+        /* Làm mờ ca đã hoàn thành / đã hủy để tách thị giác với ca còn phải khám */
+        .ap-tbl tbody tr.row-done,
+        .ap-tbl tbody tr.row-cancelled { opacity: .55; }
+        .ap-tbl tbody tr.row-done:hover,
+        .ap-tbl tbody tr.row-cancelled:hover { opacity: 1; }
+
+    .ap-time-cell {
+        font-weight: 800;
+        color: #0f172a;
+        font-size: 1rem;
+        line-height: 1;
+    }
+
+    .ap-date-small { font-size: .76rem; color: #64748b; margin-top: 3px; }
+
+    .ap-patient-name { font-weight: 800; color: #0f172a; }
+    .ap-patient-sub { color: #64748b; font-size: .8rem; margin-top: 2px; }
+
+    .ap-doctor-name { font-weight: 700; color: #0f172a; }
+    .ap-doctor-sub { color: #64748b; font-size: .8rem; margin-top: 2px; }
+
+    .ap-fee { font-weight: 800; color: #0f172a; }
+
+    /* ===== Thao tác: text-link style (admin panel pro) ===== */
+    .ap-actions {
+        display: inline-flex;
+        align-items: center;
+        gap: 0;
+        flex-wrap: nowrap;
+        font-size: .85rem;
+    }
+
+    .ap-link {
+        background: none;
+        border: none;
+        padding: 2px 10px;
+        font-size: .85rem;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        transition: color .15s ease;
+        font-family: inherit;
+        line-height: 1.4;
+        white-space: nowrap;
+    }
+
+    .ap-link:hover {
+        text-decoration: underline;
+    }
+
+    .ap-sep {
+        color: #cbd5e1;
+        font-weight: 400;
+        user-select: none;
+    }
+
+    .ap-link-primary { color: #2563eb; }
+    .ap-link-primary:hover { color: #1d4ed8; }
+
+    .ap-link-muted { color: #64748b; }
+    .ap-link-muted:hover { color: #0f172a; }
+
+    .ap-link-danger { color: #dc2626; }
+    .ap-link-danger:hover { color: #991b1b; }
+
+    /* "Đã hoàn tất" — text trạng thái không click */
+    .ap-link-done {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 2px 10px;
+        color: #047857;
+        font-size: .85rem;
+        font-weight: 700;
+    }
+
+    .ap-empty {
+        text-align: center;
+        padding: 50px 20px;
+        color: #94a3b8;
+    }
+
+        .ap-empty i { font-size: 2.2rem; opacity: .5; margin-bottom: 10px; display: block; }
+
+    @@media (max-width: 991px) {
+        .ap-stats { grid-template-columns: repeat(3, 1fr); }
+        .ap-welcome { flex-direction: column; align-items: flex-start; }
+    }
+
+    @@media (max-width: 640px) {
+        .ap-stats { grid-template-columns: repeat(2, 1fr); }
+        .ap-tbl { font-size: .82rem; }
+    }
+</style>
+
+<!-- WELCOME -->
+<div class="ap-welcome">
+    <div class="ap-avatar">@initial</div>
+
+    <div class="ap-welcome-text">
+        <div class="ap-greeting">@greeting, @shortName! Chúc bạn làm việc hiệu quả hôm nay ✨</div>
+        <div class="ap-name">@userName</div>
+        <div class="ap-meta">
+            <span><i class="fas fa-user-shield me-1"></i>@roleLabel</span>
+            <span><i class="fas fa-clock me-1"></i>@now.ToString("HH:mm")</span>
+        </div>
+    </div>
+
+    <div class="ap-today-badge">
+        <div class="ap-today-lbl">Hôm nay</div>
+        <div class="ap-today-val">@DateTime.Today.ToString("dd/MM/yyyy")</div>
+    </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success"><i class="fas fa-check-circle me-2"></i>@TempData["Success"]</div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger"><i class="fas fa-triangle-exclamation me-2"></i>@TempData["Error"]</div>
+}
+
+<!-- STATS 5 -->
+<div class="ap-stats">
+    <div class="ap-stat s1">
+        <div class="ap-stat-ico"><i class="fas fa-calendar-day"></i></div>
+        <div>
+            <div class="ap-stat-val">@ViewBag.TotalCount</div>
+            <div class="ap-stat-lbl">Tổng lịch</div>
+        </div>
+    </div>
+    <div class="ap-stat s2">
+        <div class="ap-stat-ico"><i class="fas fa-hourglass-half"></i></div>
+        <div>
+            <div class="ap-stat-val">@ViewBag.PendingCount</div>
+            <div class="ap-stat-lbl">Chờ xác nhận</div>
+        </div>
+    </div>
+    <div class="ap-stat s3">
+        <div class="ap-stat-ico"><i class="fas fa-circle-check"></i></div>
+        <div>
+            <div class="ap-stat-val">@ViewBag.ConfirmedCount</div>
+            <div class="ap-stat-lbl">Đã xác nhận</div>
+        </div>
+    </div>
+    <div class="ap-stat s4">
+        <div class="ap-stat-ico"><i class="fas fa-file-medical"></i></div>
+        <div>
+            <div class="ap-stat-val">@ViewBag.DoneCount</div>
+            <div class="ap-stat-lbl">Hoàn thành</div>
+        </div>
+    </div>
+    <div class="ap-stat s5">
+        <div class="ap-stat-ico"><i class="fas fa-ban"></i></div>
+        <div>
+            <div class="ap-stat-val">@ViewBag.CancelledCount</div>
+            <div class="ap-stat-lbl">Đã hủy</div>
+        </div>
+    </div>
+</div>
+
+<!-- FILTER with quick pills -->
+<div class="ap-filter-card">
+    <div class="ap-pills">
+        <a class="ap-pill @(selectedDate == yesterday ? "active" : "")"
+           href="@Url.Action("Index", "Appointment", new { date = yesterday })">
+            <i class="fas fa-backward me-1"></i>Hôm qua
+        </a>
+        <a class="ap-pill @(selectedDate == today ? "active" : "")"
+           href="@Url.Action("Index", "Appointment", new { date = today })">
+            <i class="fas fa-calendar-day me-1"></i>Hôm nay
+        </a>
+        <a class="ap-pill @(selectedDate == tomorrow ? "active" : "")"
+           href="@Url.Action("Index", "Appointment", new { date = tomorrow })">
+            <i class="fas fa-forward me-1"></i>Ngày mai
+        </a>
+
+        <a href="@Url.Action("Create", "Appointment")" class="btn btn-primary ms-auto">
+            <i class="fas fa-plus me-1"></i>Tạo lịch mới
+        </a>
+    </div>
+
+    @using (Html.BeginForm("Index", "Appointment", FormMethod.Get))
+    {
+        <div class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label">Ngày cụ thể</label>
+                <input type="date" name="date" value="@ViewBag.SelectedDate" class="form-control" />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Trạng thái</label>
+                <select name="status" class="form-select">
+                    <option value="" @(string.IsNullOrWhiteSpace(ViewBag.SelectedStatus) ? "selected" : "")>Tất cả</option>
+                    <option value="Pending" @(ViewBag.SelectedStatus == "Pending" ? "selected" : "")>Chờ xác nhận</option>
+                    <option value="Confirmed" @(ViewBag.SelectedStatus == "Confirmed" ? "selected" : "")>Đã xác nhận</option>
+                    <option value="Done" @(ViewBag.SelectedStatus == "Done" ? "selected" : "")>Hoàn thành</option>
+                    <option value="Cancelled" @(ViewBag.SelectedStatus == "Cancelled" ? "selected" : "")>Đã hủy</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Tìm kiếm</label>
+                <input type="text" name="q" value="@ViewBag.Query" class="form-control" placeholder="Tên BN / CCCD / SĐT / tên bác sĩ" />
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-primary w-100">
+                    <i class="fas fa-search me-1"></i>Lọc
+                </button>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- LIST -->
+<div class="ap-list-card">
+    <div class="ap-list-head">
+        <div>
+            <div class="ap-list-title"><i class="fas fa-list-ul me-2 text-primary"></i>Danh sách lịch khám</div>
+            <div class="ap-list-sub">Ngày @parsedSelectedDate.ToString("dd/MM/yyyy") · @Model.Count() lịch hẹn</div>
+        </div>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="ap-empty">
+            <i class="fas fa-calendar-times"></i>
+            <p>Không có lịch hẹn nào trong điều kiện đã chọn.</p>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+        <table class="ap-tbl">
+            <thead>
+                <tr>
+                    <th>Giờ</th>
+                    <th>Bệnh nhân</th>
+                    <th>Bác sĩ</th>
+                    <th>Ghi chú</th>
+                    <th>Phí</th>
+                    <th>Trạng thái</th>
+                    <th style="width:230px">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    string rowCls = "row-" + item.Status.ToLower();
+                    string badgeCls = StatusHelper.StatusClass(item.Status);
+                    string badgeText = StatusHelper.StatusText(item.Status);
+
+                    <tr class="@rowCls">
+                        <td>
+                            <div class="ap-time-cell">@item.TimeSlot</div>
+                            <div class="ap-date-small">@item.AppointmentDate.ToString("dd/MM/yyyy")</div>
+                        </td>
+
+                        <td>
+                            <div class="ap-patient-name">@item.Patient.FullName</div>
+                            <div class="ap-patient-sub">
+                                <i class="fas fa-phone fa-xs me-1"></i>@item.Patient.Phone
+                            </div>
+                            <div class="ap-patient-sub">
+                                <i class="fas fa-id-card fa-xs me-1"></i>@item.Patient.CCCD
+                            </div>
+                        </td>
+
+                        <td>
+                            <div class="ap-doctor-name">@item.Doctor.FullName</div>
+                            @{
+                                string docSpec = item.Doctor.Specialty ?? "";
+                                string docDept = item.Doctor.Department != null ? item.Doctor.Department.DepartmentName : "";
+                                string docLine = docSpec;
+                                if (!string.IsNullOrWhiteSpace(docDept) && !string.Equals(docSpec, docDept, StringComparison.OrdinalIgnoreCase))
+                                {
+                                    docLine = docSpec + " · " + docDept;
+                                }
+                                else if (string.IsNullOrWhiteSpace(docSpec))
+                                {
+                                    docLine = docDept;
+                                }
+                            }
+                            <div class="ap-doctor-sub">@docLine</div>
+                        </td>
+
+                        <td style="max-width:220px">
+                            @(string.IsNullOrWhiteSpace(item.Note) ? "—" : item.Note)
+                        </td>
+
+                        <td><div class="ap-fee">@String.Format("{0:N0} đ", item.TotalFee)</div></td>
+
+                        <td><span class="bs @badgeCls">@badgeText</span></td>
+
+                        <td>
+                            <div class="ap-actions">
+                                @if (item.Status == "Pending")
+                                {
+                                    using (Html.BeginForm("Confirm", "Appointment", FormMethod.Post, new { style = "display:inline" }))
+                                    {
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@item.Id" />
+                                        <input type="hidden" name="returnDate" value="@ViewBag.SelectedDate" />
+                                        <input type="hidden" name="returnStatus" value="@ViewBag.SelectedStatus" />
+                                        <input type="hidden" name="returnQ" value="@ViewBag.Query" />
+                                        <button type="submit" class="ap-link ap-link-primary">Xác nhận</button>
+                                    }
+                                    <span class="ap-sep">|</span>
+                                    <a href="@Url.Action("Edit", "Appointment", new { id = item.Id })"
+                                       class="ap-link ap-link-muted">Sửa</a>
+                                    <span class="ap-sep">|</span>
+                                    using (Html.BeginForm("Cancel", "Appointment", FormMethod.Post, new { style = "display:inline" }))
+                                    {
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@item.Id" />
+                                        <input type="hidden" name="returnDate" value="@ViewBag.SelectedDate" />
+                                        <input type="hidden" name="returnStatus" value="@ViewBag.SelectedStatus" />
+                                        <input type="hidden" name="returnQ" value="@ViewBag.Query" />
+                                        <button type="submit" class="ap-link ap-link-danger"
+                                                onclick="return confirm('Bạn có chắc muốn hủy lịch hẹn này?');">Hủy</button>
+                                    }
+                                }
+                                else if (item.Status == "Confirmed")
+                                {
+                                    <a href="@Url.Action("Edit", "Appointment", new { id = item.Id })"
+                                       class="ap-link ap-link-muted">Sửa</a>
+                                    <span class="ap-sep">|</span>
+                                    using (Html.BeginForm("Cancel", "Appointment", FormMethod.Post, new { style = "display:inline" }))
+                                    {
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@item.Id" />
+                                        <input type="hidden" name="returnDate" value="@ViewBag.SelectedDate" />
+                                        <input type="hidden" name="returnStatus" value="@ViewBag.SelectedStatus" />
+                                        <input type="hidden" name="returnQ" value="@ViewBag.Query" />
+                                        <button type="submit" class="ap-link ap-link-danger"
+                                                onclick="return confirm('Bạn có chắc muốn hủy lịch hẹn này?');">Hủy</button>
+                                    }
+                                }
+                                else if (item.Status == "Done")
+                                {
+                                    <span class="ap-link-done">
+                                        <i class="fas fa-check-circle"></i>Đã hoàn tất
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="ap-link-done" style="background:#fef2f2;color:#991b1b;border:none;padding:4px 10px;border-radius:6px;font-size:.78rem;font-weight:700">
+                                        <i class="fas fa-ban"></i>Đã hủy
+                                    </span>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        </div>
+    }
+</div>

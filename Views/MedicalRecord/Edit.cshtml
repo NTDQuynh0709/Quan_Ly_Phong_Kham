@@ -1,0 +1,1163 @@
+﻿@model web.Models.MedicalRecord
+
+@{
+    ViewBag.Title = "Lập bệnh án";
+    ViewBag.Ctrl = "DoctorPortal";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    var appointment = ViewBag.Appointment as web.Models.Appointment;
+    var logs = ViewBag.Logs as List<web.Models.MedicalRecordLog> ?? new List<web.Models.MedicalRecordLog>();
+    bool hasRecord = ViewBag.HasSavedRecord != null
+        ? (bool)ViewBag.HasSavedRecord
+        : (Model != null && Model.Id > 0);
+    bool isLocked = hasRecord && Model != null && Model.IsLocked;
+}
+
+<style>
+    .mr-box,
+    .mr-info-card {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 22px;
+        box-shadow: 0 10px 26px rgba(15,23,42,.06);
+    }
+
+    .mr-box {
+        padding: 24px;
+    }
+
+    .mr-info-card {
+        padding: 20px;
+    }
+
+    .mr-title {
+        font-size: 1rem;
+        font-weight: 800;
+        color: #0f172a;
+        margin-bottom: 14px;
+    }
+
+    .mr-meta {
+        display: grid;
+        gap: 10px;
+    }
+
+    .mr-meta-item {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        color: #334155;
+        line-height: 1.6;
+    }
+
+        .mr-meta-item i {
+            width: 16px;
+            color: #2563eb;
+            margin-top: 2px;
+            flex-shrink: 0;
+        }
+
+    textarea.form-control {
+        min-height: 110px;
+    }
+
+    /* ===== Lock status banner ===== */
+    .mr-lock-banner {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 14px 18px;
+        border-radius: 14px;
+        margin-bottom: 18px;
+        border: 1.5px solid transparent;
+        font-weight: 700;
+    }
+
+    .mr-lock-open {
+        background: #ecfdf5;
+        color: #065f46;
+        border-color: #a7f3d0;
+    }
+
+    .mr-lock-closed {
+        background: #fef2f2;
+        color: #991b1b;
+        border-color: #fecaca;
+    }
+
+    .mr-lock-banner i {
+        font-size: 1.3rem;
+    }
+
+    .mr-lock-sub {
+        font-weight: 500;
+        font-size: .85rem;
+        margin-top: 2px;
+    }
+
+    /* ===== Timeline audit log ===== */
+    .mr-timeline {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 18px;
+        padding: 20px;
+        margin-top: 20px;
+    }
+
+    .mr-timeline-title {
+        font-weight: 800;
+        color: #0f172a;
+        font-size: 1.02rem;
+        margin-bottom: 16px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #eef2f7;
+    }
+
+    .mr-log-item {
+        position: relative;
+        padding: 12px 0 14px 28px;
+        border-left: 2px solid #e2e8f0;
+        margin-left: 8px;
+    }
+
+        .mr-log-item::before {
+            content: "";
+            position: absolute;
+            left: -7px;
+            top: 16px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #94a3b8;
+            border: 2.5px solid #fff;
+            box-shadow: 0 0 0 1px #e2e8f0;
+        }
+
+        .mr-log-item.type-edit::before { background: #2563eb; }
+        .mr-log-item.type-lock::before { background: #dc2626; }
+        .mr-log-item.type-addendum::before { background: #d97706; }
+
+    .mr-log-head {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-bottom: 6px;
+    }
+
+    .mr-log-badge {
+        display: inline-block;
+        padding: 2px 10px;
+        border-radius: 999px;
+        font-size: .72rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: .04em;
+    }
+
+        .mr-log-badge.edit { background: #dbeafe; color: #1d4ed8; }
+        .mr-log-badge.lock { background: #fee2e2; color: #991b1b; }
+        .mr-log-badge.addendum { background: #fef3c7; color: #92400e; }
+
+    .mr-log-meta {
+        font-size: .82rem;
+        color: #64748b;
+    }
+
+    .mr-log-body {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 10px 14px;
+        margin-top: 6px;
+        font-size: .88rem;
+        color: #334155;
+        line-height: 1.7;
+        white-space: pre-line;
+    }
+
+    .mr-log-diff {
+        font-size: .8rem;
+        color: #64748b;
+        margin-top: 4px;
+    }
+
+        .mr-log-diff strong {
+            color: #0f172a;
+        }
+
+    .mr-addendum-form {
+        background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+        border: 1.5px solid #fde68a;
+        border-radius: 18px;
+        padding: 22px;
+        margin-top: 20px;
+        box-shadow: 0 4px 20px rgba(217,119,6,.08);
+    }
+
+    /* ===== Action chips ===== */
+    .ad-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        border-radius: 999px;
+        font-size: .82rem;
+        font-weight: 700;
+        border: 1.5px solid transparent;
+        cursor: pointer;
+        transition: all .15s ease;
+        background: #fff;
+    }
+
+        .ad-chip:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(0,0,0,.08);
+        }
+
+        .ad-chip:active {
+            transform: translateY(0);
+        }
+
+    .ad-chip-add {
+        background: #ecfdf5;
+        color: #047857;
+        border-color: #a7f3d0;
+    }
+
+        .ad-chip-add:hover {
+            background: #d1fae5;
+        }
+
+    .ad-chip-stop {
+        background: #fef2f2;
+        color: #b91c1c;
+        border-color: #fecaca;
+    }
+
+        .ad-chip-stop:hover {
+            background: #fee2e2;
+        }
+
+    .ad-chip-keep {
+        background: #eff6ff;
+        color: #1d4ed8;
+        border-color: #bfdbfe;
+    }
+
+        .ad-chip-keep:hover {
+            background: #dbeafe;
+        }
+
+    .ad-chip-template {
+        background: #f5f3ff;
+        color: #6d28d9;
+        border-color: #ddd6fe;
+    }
+
+        .ad-chip-template:hover {
+            background: #ede9fe;
+        }
+
+    /* ===== Live preview card ===== */
+    .ad-preview-card {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        padding: 16px;
+        box-shadow: 0 2px 10px rgba(15,23,42,.04);
+    }
+
+    .ad-preview-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 12px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .ad-preview-type {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 12px;
+        border-radius: 999px;
+        font-size: .78rem;
+        font-weight: 800;
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .ad-preview-meta {
+        font-size: .78rem;
+        color: #94a3b8;
+    }
+
+    .ad-preview-reason {
+        font-size: .86rem;
+        color: #1e293b;
+        padding: 8px 12px;
+        background: #fffbeb;
+        border-left: 3px solid #f59e0b;
+        border-radius: 0 8px 8px 0;
+        margin-bottom: 10px;
+    }
+
+    .ad-preview-body {
+        font-size: .88rem;
+        line-height: 1.85;
+        color: #334155;
+        white-space: pre-line;
+        min-height: 40px;
+    }
+
+    /* Action lines trong preview (parse text) */
+    .ad-line {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 6px 10px;
+        border-radius: 8px;
+        margin: 3px 0;
+    }
+
+    .ad-line-badge {
+        flex-shrink: 0;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 2px 8px;
+        border-radius: 6px;
+        font-size: .7rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: .03em;
+    }
+
+    .ad-line-add { background: #ecfdf5; }
+    .ad-line-add .ad-line-badge { background: #10b981; color: #fff; }
+
+    .ad-line-stop { background: #fef2f2; }
+    .ad-line-stop .ad-line-badge { background: #ef4444; color: #fff; }
+
+    .ad-line-keep { background: #eff6ff; }
+    .ad-line-keep .ad-line-badge { background: #3b82f6; color: #fff; }
+
+    /* ===== Floating Action Button (FAB) =====
+       Đẩy lên trên nút "Lên đầu trang" (bottom:28px, height:48px) để 2 nút không đè nhau */
+    .addendum-fab {
+        position: fixed;
+        bottom: 92px;
+        right: 28px;
+        z-index: 1040;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 14px 22px;
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+        color: #fff;
+        border: none;
+        border-radius: 999px;
+        box-shadow: 0 8px 24px rgba(217,119,6,.4), 0 2px 6px rgba(217,119,6,.2);
+        font-weight: 700;
+        font-size: .95rem;
+        cursor: pointer;
+        transition: all .2s ease;
+    }
+
+        .addendum-fab:hover {
+            transform: translateY(-3px) scale(1.03);
+            box-shadow: 0 12px 30px rgba(217,119,6,.5), 0 4px 10px rgba(217,119,6,.3);
+            color: #fff;
+        }
+
+        .addendum-fab i {
+            font-size: 1.15rem;
+        }
+
+        .addendum-fab-label {
+            white-space: nowrap;
+        }
+
+    @@media (max-width: 575px) {
+        .addendum-fab {
+            padding: 14px;
+            bottom: 20px;
+            right: 20px;
+        }
+
+        .addendum-fab-label {
+            display: none;
+        }
+    }
+
+    /* ===== Modal header gradient (compact) ===== */
+    .addendum-modal-head {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        color: #fff;
+        padding: 12px 18px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        flex-shrink: 0;
+    }
+
+    .addendum-modal-head .h-title {
+        font-size: 1rem;
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .addendum-modal-head .h-sub {
+        font-size: .78rem;
+        opacity: .9;
+        margin-top: 2px;
+    }
+
+    /* ===== Modal cuộn nội dung — header + footer cố định ===== */
+    #addendumModal .modal-dialog {
+        max-height: calc(100vh - 32px);
+        display: flex;
+        margin: 16px auto;
+    }
+
+    #addendumModal .modal-dialog.modal-lg {
+        max-width: 600px;
+    }
+
+    #addendumModal .modal-content {
+        max-height: 100%;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* Compact body */
+    #addendumModal .modal-body { padding: 14px 18px !important; }
+    #addendumModal .modal-body .mb-3 { margin-bottom: 8px !important; }
+    #addendumModal .modal-body label.form-label { font-size: .82rem; margin-bottom: 4px; }
+    #addendumModal .modal-body .form-control,
+    #addendumModal .modal-body .form-select { padding: 6px 10px; font-size: .88rem; }
+    #addendumModal .modal-body textarea.form-control { line-height: 1.5; }
+    #addendumModal .modal-footer { padding: 10px 18px; }
+    #addendumModal .modal-footer .btn { padding: 7px 14px; font-size: .85rem; }
+    #addendumModal .ad-chip { padding: 4px 10px; font-size: .76rem; }
+
+    #addendumModal form {
+        display: flex;
+        flex-direction: column;
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow: hidden;
+    }
+
+    #addendumModal .modal-body {
+        overflow-y: auto;
+        flex: 1 1 auto;
+        min-height: 0;
+    }
+
+    #addendumModal .modal-footer {
+        flex-shrink: 0;
+    }
+
+    /* ===== Pulse animation cho FAB ===== */
+    @@keyframes fab-pulse {
+        0% { box-shadow: 0 8px 24px rgba(217,119,6,.4), 0 0 0 0 rgba(245,158,11,.4); }
+        70% { box-shadow: 0 8px 24px rgba(217,119,6,.4), 0 0 0 16px rgba(245,158,11,0); }
+        100% { box-shadow: 0 8px 24px rgba(217,119,6,.4), 0 0 0 0 rgba(245,158,11,0); }
+    }
+
+    .addendum-fab {
+        animation: fab-pulse 2.5s infinite;
+    }
+</style>
+
+<div class="pg-hd">
+    <h4><i class="fas fa-file-medical me-2"></i>Lập / cập nhật bệnh án</h4>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-7">
+        <div class="mr-box">
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success mb-3" style="border-radius:12px">
+                    <i class="fas fa-check-circle me-2"></i>@TempData["Success"]
+                </div>
+            }
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-warning mb-3" style="border-radius:12px">
+                    <i class="fas fa-triangle-exclamation me-2"></i>@TempData["Error"]
+                </div>
+            }
+
+            @* ===== Banner trạng thái: chỉ còn 1 trạng thái "đã lưu = đã chốt" ===== *@
+            @if (hasRecord)
+            {
+                <div class="mr-lock-banner mr-lock-closed">
+                    <i class="fas fa-lock"></i>
+                    <div>
+                        <div>BỆNH ÁN ĐÃ LƯU &amp; KẾT THÚC KHÁM</div>
+                        <div class="mr-lock-sub">
+                            Lưu lúc @(Model.LockedAt.HasValue ? Model.LockedAt.Value.ToString("HH:mm dd/MM/yyyy") : "—").
+                            Theo Thông tư 50/2017/TT-BYT, hồ sơ bệnh án sau khi hoàn tất không được sửa đè.
+                            Mọi điều chỉnh sau đó được lưu dưới dạng <strong>ghi chú bổ sung</strong> có thời gian và lý do.
+                        </div>
+                    </div>
+                </div>
+            }
+
+            @{
+                var allErrors = ViewData.ModelState
+                    .Where(kv => kv.Value.Errors.Count > 0)
+                    .SelectMany(kv => kv.Value.Errors.Select(e => e.ErrorMessage))
+                    .Where(m => !string.IsNullOrWhiteSpace(m))
+                    .Distinct()
+                    .ToList();
+            }
+            @if (allErrors.Count > 0)
+            {
+                <div class="alert alert-danger mb-3" style="border-radius:12px">
+                    <div style="font-weight:800;margin-bottom:6px">
+                        <i class="fas fa-circle-exclamation me-2"></i>Vui lòng kiểm tra lại các thông tin sau:
+                    </div>
+                    <ul style="margin:0;padding-left:22px">
+                        @foreach (var msg in allErrors)
+                        {
+                            <li>@msg</li>
+                        }
+                    </ul>
+                </div>
+            }
+
+            @using (Html.BeginForm("Edit", "MedicalRecord", FormMethod.Post))
+            {
+                @Html.AntiForgeryToken()
+                @Html.HiddenFor(m => m.Id)
+                @Html.HiddenFor(m => m.AppointmentId)
+
+                @* Đã có record → disable toàn bộ input bên trong (chế độ xem read-only).
+                   <fieldset disabled> không cho gõ vào, không submit form được. *@
+                if (hasRecord)
+                {
+                    @:<fieldset disabled="disabled" style="border:0;padding:0;margin:0">
+                }
+
+                <!-- Section 1: Chỉ số sinh tồn -->
+                <div class="fs-title" style="margin-top:0;">
+                    <i class="fas fa-heart-pulse me-2"></i>Chỉ số sinh tồn
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Huyết áp (mmHg)</label>
+                        @Html.TextBoxFor(m => m.BloodPressure, new {
+                            @class = "form-control",
+                            placeholder = "120/80",
+                            maxlength = "20",
+                            pattern = "[0-9]{2,3}/[0-9]{2,3}",
+                            title = "Dạng TÂM THU/TÂM TRƯƠNG, ví dụ: 120/80"
+                        })
+                        @Html.ValidationMessageFor(m => m.BloodPressure, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">Nhịp tim (lần/phút)</label>
+                        @Html.TextBoxFor(m => m.HeartRate, new {
+                            @class = "form-control",
+                            type = "number",
+                            min = "20",
+                            max = "250",
+                            placeholder = "75"
+                        })
+                        @Html.ValidationMessageFor(m => m.HeartRate, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">Nhiệt độ (°C)</label>
+                        @Html.TextBoxFor(m => m.Temperature, new {
+                            @class = "form-control",
+                            inputmode = "decimal",
+                            pattern = @"^\d{1,3}([.,]\d{1,2})?$",
+                            placeholder = "36,8",
+                            title = "Nhập số, dùng dấu phẩy hoặc dấu chấm (vd: 36,8)"
+                        })
+                        @Html.ValidationMessageFor(m => m.Temperature, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Chiều cao (cm)</label>
+                        @Html.TextBoxFor(m => m.Height, new {
+                            @class = "form-control",
+                            inputmode = "decimal",
+                            pattern = @"^\d{1,3}([.,]\d{1,2})?$",
+                            placeholder = "165",
+                            title = "Nhập số, dùng dấu phẩy hoặc dấu chấm"
+                        })
+                        @Html.ValidationMessageFor(m => m.Height, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Cân nặng (kg)</label>
+                        @Html.TextBoxFor(m => m.Weight, new {
+                            @class = "form-control",
+                            inputmode = "decimal",
+                            pattern = @"^\d{1,3}([.,]\d{1,2})?$",
+                            placeholder = "60",
+                            title = "Nhập số, dùng dấu phẩy hoặc dấu chấm"
+                        })
+                        @Html.ValidationMessageFor(m => m.Weight, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <!-- Section 2: Tiền sử & triệu chứng -->
+                <div class="fs-title">
+                    <i class="fas fa-clipboard-list me-2"></i>Tiền sử và triệu chứng
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Triệu chứng bệnh nhân khai báo <span style="color:red">*</span></label>
+                    @Html.TextAreaFor(m => m.Symptoms, new {
+                        @class = "form-control",
+                        rows = "4",
+                        required = "required",
+                        placeholder = "VD: Đau đầu, chóng mặt, mệt mỏi 3 ngày..."
+                    })
+                    @Html.ValidationMessageFor(m => m.Symptoms, "", new { @class = "text-danger" })
+                </div>
+
+                <!-- Section 2: Chẩn đoán -->
+                <div class="fs-title">
+                    <i class="fas fa-stethoscope me-2"></i>Chẩn đoán
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Kết luận chẩn đoán <span style="color:red">*</span></label>
+                    @Html.TextAreaFor(m => m.Diagnosis, new {
+                        @class = "form-control",
+                        rows = "3",
+                        placeholder = "VD: Tăng huyết áp nguyên phát độ II / Viêm họng cấp / Rối loạn tiêu hóa..."
+                    })
+                    @Html.ValidationMessageFor(m => m.Diagnosis, "", new { @class = "text-danger" })
+                </div>
+
+                <!-- Section 3: Hướng điều trị -->
+                <div class="fs-title">
+                    <i class="fas fa-notes-medical me-2"></i>Hướng điều trị
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Kế hoạch điều trị <span style="color:red">*</span></label>
+                    @Html.TextAreaFor(m => m.Treatment, new {
+                        @class = "form-control",
+                        rows = "4",
+                        placeholder = "VD: Điều chỉnh chế độ ăn giảm muối, tập thể dục 30 phút/ngày, tái khám sau 2 tuần để theo dõi huyết áp..."
+                    })
+                    @Html.ValidationMessageFor(m => m.Treatment, "", new { @class = "text-danger" })
+                </div>
+
+                <!-- Section 4: Đơn thuốc -->
+                <div class="fs-title">
+                    <i class="fas fa-pills me-2"></i>Đơn thuốc
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Kê đơn thuốc</label>
+                    @Html.TextAreaFor(m => m.Prescription, new {
+                        @class = "form-control",
+                        rows = "6",
+                        style = "font-family: 'Consolas', monospace;",
+                        placeholder = "Mỗi dòng 1 loại thuốc. VD:\nAmlodipine 5mg - sáng 1 viên - 30 ngày\nLosartan 50mg - tối 1 viên - 30 ngày\nAspirin 81mg - sáng 1 viên - 30 ngày"
+                    })
+                    <div class="form-text" style="font-size:.82rem;color:#64748b">
+                        <i class="fas fa-lightbulb me-1 text-warning"></i>
+                        Mẹo: nhập mỗi thuốc trên 1 dòng, theo dạng <code>Tên thuốc - liều lượng - số ngày</code>
+                    </div>
+                    @Html.ValidationMessageFor(m => m.Prescription, "", new { @class = "text-danger" })
+                </div>
+
+                <!-- Section 5: Dặn dò -->
+                <div class="fs-title">
+                    <i class="fas fa-comment-medical me-2"></i>Dặn dò bệnh nhân
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Ghi chú và lịch tái khám</label>
+                    @Html.TextAreaFor(m => m.Note, new {
+                        @class = "form-control",
+                        rows = "3",
+                        placeholder = "VD: Theo dõi huyết áp 2 lần/ngày tại nhà. Tái khám sau 14 ngày. Đến khám ngay nếu đau đầu dữ dội..."
+                    })
+                    @Html.ValidationMessageFor(m => m.Note, "", new { @class = "text-danger" })
+                </div>
+
+                @* Đóng fieldset disabled (chỉ mở khi hasRecord) *@
+                if (hasRecord)
+                {
+                    @:</fieldset>
+                }
+
+                <hr class="my-4" />
+
+                <div class="d-flex flex-wrap gap-3">
+                    @if (!hasRecord)
+                    {
+                        <button type="submit" class="btn btn-primary btn-lg"
+                                onclick="return confirm('Lưu hồ sơ và kết thúc lịch khám? Sau khi lưu, hồ sơ được khóa theo quy định BYT — mọi điều chỉnh sau đó phải thêm dưới dạng ghi chú bổ sung.');">
+                            <i class="fas fa-save me-2"></i>Lưu hồ sơ &amp; kết thúc khám
+                        </button>
+                    }
+                    else
+                    {
+                        <button type="button" class="btn btn-success btn-lg" disabled>
+                            <i class="fas fa-circle-check me-2"></i>Bệnh án đã hoàn tất
+                        </button>
+                    }
+
+                    <a href="@Url.Action("MySchedule", "DoctorPortal", new { date = appointment != null ? appointment.AppointmentDate.ToString("yyyy-MM-dd") : "" })"
+                       class="btn btn-outline-secondary btn-lg">
+                        <i class="fas fa-arrow-left me-2"></i>Quay lại lịch khám
+                    </a>
+                </div>
+            }
+
+            @* ===== Form inline đã BỎ — chuyển sang Modal + FAB ở cuối trang ===== *@
+
+            @* Timeline chỉnh sửa đã dời sang trang Admin/PatientHistory.
+               Bác sĩ chỉ thấy kết quả cuối cùng + badge trạng thái khóa + các phụ lục do mình thêm (nếu có). *@
+            @{
+                var myAddenda = logs.Where(l => l.LogType == "Addendum").ToList();
+            }
+            @if (myAddenda.Any())
+            {
+                <div class="mr-timeline">
+                    <div class="mr-timeline-title">
+                        <i class="fas fa-file-circle-plus me-2 text-warning"></i>Ghi chú bổ sung đã thêm (@myAddenda.Count)
+                    </div>
+                    @foreach (var log in myAddenda)
+                    {
+                        <div class="mr-log-item type-addendum">
+                            <div class="mr-log-head">
+                                <span class="mr-log-badge addendum">Bổ sung</span>
+                                <span class="mr-log-meta">
+                                    <i class="fas fa-user-doctor me-1"></i>@log.CreatedByName
+                                    &nbsp;·&nbsp;
+                                    <i class="fas fa-clock me-1"></i>@log.CreatedAt.ToString("HH:mm dd/MM/yyyy")
+                                </span>
+                            </div>
+                            <div class="mr-log-diff">
+                                <strong>Lý do:</strong> @(string.IsNullOrWhiteSpace(log.Reason) ? "—" : log.Reason)
+                            </div>
+                            <div class="mr-log-body">@log.AddendumText</div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="mr-info-card">
+            <div class="mr-title">Thông tin lượt khám</div>
+
+            @if (appointment != null)
+            {
+                <div class="mr-meta">
+                    <div class="mr-meta-item">
+                        <i class="fas fa-user"></i>
+                        <span><strong>Bệnh nhân:</strong> @appointment.Patient.FullName</span>
+                    </div>
+
+                    <div class="mr-meta-item">
+                        <i class="fas fa-id-card"></i>
+                        <span><strong>CCCD:</strong> @appointment.Patient.CCCD</span>
+                    </div>
+
+                    <div class="mr-meta-item">
+                        <i class="fas fa-phone"></i>
+                        <span><strong>Số điện thoại:</strong> @appointment.Patient.Phone</span>
+                    </div>
+
+                    <div class="mr-meta-item">
+                        <i class="fas fa-user-doctor"></i>
+                        <span><strong>Bác sĩ:</strong> @appointment.Doctor.FullName</span>
+                    </div>
+
+                    <div class="mr-meta-item">
+                        <i class="fas fa-stethoscope"></i>
+                        <span><strong>Chuyên khoa:</strong> @appointment.Doctor.Specialty</span>
+                    </div>
+
+                    <div class="mr-meta-item">
+                        <i class="fas fa-calendar-day"></i>
+                        <span><strong>Ngày khám:</strong> @appointment.AppointmentDate.ToString("dd/MM/yyyy") - @appointment.TimeSlot</span>
+                    </div>
+
+                    <div class="mr-meta-item">
+                        <i class="fas fa-money-bill-wave"></i>
+                        <span><strong>Phí khám:</strong> @String.Format("{0:N0} đ", appointment.TotalFee)</span>
+                    </div>
+
+                    <div class="mr-meta-item">
+                        <i class="fas fa-note-sticky"></i>
+                        <span><strong>Ghi chú lịch khám:</strong> @(string.IsNullOrWhiteSpace(appointment.Note) ? "—" : appointment.Note)</span>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@* ============================================================
+   FAB (Floating Action Button) + MODAL — Ghi chú bổ sung
+   Chỉ hiện khi bệnh án đã chốt. Click FAB → mở modal full-feature
+   ============================================================ *@
+@if (isLocked)
+{
+    <button type="button" class="addendum-fab"
+            data-bs-toggle="modal" data-bs-target="#addendumModal"
+            title="Thêm ghi chú bổ sung">
+        <i class="fas fa-file-circle-plus"></i>
+        <span class="addendum-fab-label">Thêm ghi chú</span>
+    </button>
+
+    <div class="modal fade" id="addendumModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content" style="border:none;border-radius:18px;overflow:hidden">
+                @* Header gradient (compact) *@
+                <div class="addendum-modal-head">
+                    <div>
+                        <div class="h-title">
+                            <i class="fas fa-file-circle-plus"></i>Ghi chú bổ sung bệnh án
+                        </div>
+                        <div class="h-sub">Giữ nguyên nội dung gốc, đính kèm ghi chú theo thời gian</div>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+
+                @using (Html.BeginForm("AddAddendum", "MedicalRecord", FormMethod.Post, new { novalidate = "novalidate", id = "addendumForm" }))
+                {
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@appointment.Id" />
+
+                    <div class="modal-body" style="background:#fffdf5">
+                        @* ===== Tóm tắt bệnh án gốc — compact 1 khối ===== *@
+                        <div style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:8px 12px;margin-bottom:10px;font-size:.8rem;line-height:1.5;color:#334155">
+                            <i class="fas fa-file-medical me-1 text-primary"></i>
+                            <strong>Chẩn đoán:</strong> @(string.IsNullOrWhiteSpace(Model.Diagnosis) ? "—" : Model.Diagnosis)
+                            &nbsp;·&nbsp;
+                            <strong>Điều trị:</strong>
+                            @{
+                                string treatShort = Model.Treatment ?? "";
+                                if (treatShort.Length > 60) { treatShort = treatShort.Substring(0, 60) + "..."; }
+                            }
+                            @(string.IsNullOrWhiteSpace(treatShort) ? "—" : treatShort)
+                        </div>
+
+                        @* ===== Các ghi chú bổ sung trước đó (nếu có) — tránh BS ghi trùng ===== *@
+                        @if (myAddenda.Any())
+                        {
+                            <div style="background:#fefce8;border:1px solid #fde68a;border-radius:12px;padding:12px 14px;margin-bottom:16px;max-height:140px;overflow-y:auto">
+                                <div style="font-size:.78rem;font-weight:800;color:#92400e;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">
+                                    <i class="fas fa-clock-rotate-left me-1"></i>Đã có @myAddenda.Count ghi chú trước đó
+                                </div>
+                                @foreach (var prev in myAddenda)
+                                {
+                                    <div style="font-size:.8rem;color:#78350f;padding:4px 0;border-bottom:1px dashed #fde68a">
+                                        <i class="fas fa-circle" style="font-size:.4rem;vertical-align:middle"></i>
+                                        <strong>@prev.CreatedAt.ToString("HH:mm dd/MM"):</strong>
+                                        @(string.IsNullOrWhiteSpace(prev.Reason) ? "—" : prev.Reason)
+                                    </div>
+                                }
+                            </div>
+                        }
+
+                        @* Dropdown loại — name="addendumType" để gửi lên server *@
+                        <div class="mb-3">
+                            <label class="form-label" style="font-weight:700;font-size:.9rem">
+                                <i class="fas fa-tag me-1 text-warning"></i>Loại bổ sung
+                            </label>
+                            <select class="form-select" id="addendumType" name="addendumType">
+                                <option value="">— Chọn loại để hệ thống gợi ý mẫu —</option>
+                                <option value="med">💊 Thêm / đổi / ngưng thuốc</option>
+                                <option value="lab">🔬 Bổ sung kết quả xét nghiệm</option>
+                                <option value="diag">📋 Điều chỉnh chẩn đoán</option>
+                                <option value="treat">🎯 Thay đổi hướng điều trị</option>
+                                <option value="other">📝 Ghi chú khác</option>
+                            </select>
+                        </div>
+
+                        @* Ô nhãn tự do — chỉ hiện khi chọn "Ghi chú khác" *@
+                        <div class="mb-3" id="addendumOtherLabelBox" style="display:none">
+                            <label class="form-label" style="font-weight:700;font-size:.9rem">
+                                <i class="fas fa-pen-nib me-1 text-warning"></i>Cụ thể loại ghi chú là gì? <span style="color:red">*</span>
+                            </label>
+                            <input type="text" id="addendumOtherLabel" name="addendumOtherLabel" class="form-control"
+                                   maxlength="80"
+                                   placeholder="VD: Dị ứng thuốc, Liên hệ người nhà, Lưu ý theo dõi, Khuyến nghị tái khám..." />
+                            <div class="form-text" style="font-size:.76rem;color:#64748b">
+                                <i class="fas fa-info-circle me-1"></i>Một nhãn ngắn để dễ tra cứu sau này. Nội dung chi tiết ghi ở ô bên dưới.
+                            </div>
+                        </div>
+
+                        @* Lý do *@
+                        <div class="mb-3">
+                            <label class="form-label" style="font-weight:700;font-size:.9rem">
+                                <i class="fas fa-circle-question me-1 text-warning"></i>Lý do bổ sung <span style="color:red">*</span>
+                            </label>
+                            <input type="text" name="reason" id="addendumReason" class="form-control"
+                                   placeholder="VD: Kết quả XN máu phát hiện đái tháo đường" />
+                        </div>
+
+                        @* Chips — chỉ hiện khi loại là thuốc *@
+                        <div id="addendumChips" style="display:none;margin-bottom:12px">
+                            <div style="font-size:.78rem;color:#64748b;font-weight:600;margin-bottom:6px">
+                                <i class="fas fa-bolt me-1"></i>Thao tác nhanh:
+                            </div>
+                            <div class="d-flex flex-wrap gap-2">
+                                <button type="button" class="ad-chip ad-chip-add" onclick="insertAction('BỔ SUNG')">
+                                    <i class="fas fa-plus"></i>Bổ sung
+                                </button>
+                                <button type="button" class="ad-chip ad-chip-stop" onclick="insertAction('NGƯNG')">
+                                    <i class="fas fa-ban"></i>Ngưng
+                                </button>
+                                <button type="button" class="ad-chip ad-chip-keep" onclick="insertAction('DUY TRÌ')">
+                                    <i class="fas fa-check"></i>Duy trì
+                                </button>
+                                <button type="button" class="ad-chip ad-chip-template" onclick="useTemplate()">
+                                    <i class="fas fa-wand-magic-sparkles"></i>Dùng mẫu đầy đủ
+                                </button>
+                            </div>
+                        </div>
+
+                        @* Nội dung + counter *@
+                        <div class="mb-3">
+                            <label class="form-label d-flex justify-content-between align-items-center" style="font-weight:700;font-size:.9rem">
+                                <span><i class="fas fa-pen-to-square me-1 text-warning"></i>Nội dung bổ sung <span style="color:red">*</span></span>
+                                <span id="addendumCount" style="font-weight:500;color:#94a3b8;font-size:.78rem">0 ký tự</span>
+                            </label>
+                            <textarea name="addendumText" id="addendumText" class="form-control" rows="3"
+                                      maxlength="2000"
+                                      placeholder="Mô tả chi tiết nội dung thêm / thay đổi..."></textarea>
+                            <div class="form-text" style="font-size:.76rem;color:#64748b">
+                                <i class="fas fa-keyboard me-1"></i><strong>Ctrl + Enter</strong> để lưu nhanh
+                            </div>
+                        </div>
+
+                        @* Live preview *@
+                        <div id="addendumPreview" style="display:none">
+                            <div style="font-size:.78rem;color:#64748b;font-weight:700;margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em">
+                                <i class="fas fa-eye me-1"></i>Xem trước
+                            </div>
+                            <div class="ad-preview-card">
+                                <div class="ad-preview-head">
+                                    <span id="previewType" class="ad-preview-type">—</span>
+                                    <span class="ad-preview-meta">
+                                        <i class="fas fa-user-doctor me-1"></i>@(Session["UserName"] ?? "Bác sĩ")
+                                        · <i class="fas fa-clock me-1"></i><span id="previewTime">đang soạn</span>
+                                    </span>
+                                </div>
+                                <div class="ad-preview-reason" id="previewReason" style="display:none"></div>
+                                <div class="ad-preview-body" id="previewBody"></div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="modal-footer" style="background:#fffbeb;border-top:1px solid #fde68a">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Đóng</button>
+                        <button type="submit" class="btn btn-warning" style="font-weight:700">
+                            <i class="fas fa-paper-plane me-2"></i>Lưu ghi chú bổ sung
+                        </button>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            var templates = {
+                med: {
+                    label: "💊 Thêm / đổi / ngưng thuốc",
+                    reason: "Điều chỉnh đơn thuốc sau kết quả / theo dõi",
+                    text: "BỔ SUNG: [Tên thuốc] [Liều] x [Số lần/ngày] trong [Số ngày]\nNGƯNG: [Tên thuốc đang dùng] (lý do: ...)\nDUY TRÌ: [Tên thuốc giữ nguyên]\nHướng dẫn bệnh nhân: ..."
+                },
+                lab: {
+                    label: "🔬 Bổ sung kết quả xét nghiệm",
+                    reason: "Bổ sung kết quả xét nghiệm / chẩn đoán hình ảnh",
+                    text: "Ngày lấy mẫu: [dd/MM/yyyy]\nLoại xét nghiệm: [Công thức máu / Sinh hóa / X-quang / ...]\n\nKết quả bất thường:\n- [Chỉ số]: [Giá trị] (bình thường: ...)\n\nKết luận: ..."
+                },
+                diag: {
+                    label: "📋 Điều chỉnh chẩn đoán",
+                    reason: "Điều chỉnh / bổ sung chẩn đoán",
+                    text: "Chẩn đoán cũ: [giữ nguyên để tham chiếu]\nChẩn đoán bổ sung / thay đổi: [Tên bệnh, mã ICD-10]\nLý do điều chỉnh: [dựa vào XN / diễn tiến / ý kiến hội chẩn]"
+                },
+                treat: {
+                    label: "🎯 Thay đổi hướng điều trị",
+                    reason: "Thay đổi hướng điều trị",
+                    text: "Hướng điều trị cũ: [giữ nguyên, ghi lại]\nHướng điều trị mới: ...\nLý do thay đổi: ...\nHẹn tái khám: [dd/MM/yyyy]"
+                },
+                other: {
+                    label: "📝 Ghi chú khác",
+                    reason: "",
+                    text: "Nội dung ghi chú: ...\nThời điểm phát sinh: [dd/MM/yyyy HH:mm]\nDặn dò bệnh nhân (nếu có): ..."
+                }
+            };
+
+            var typeSel = document.getElementById('addendumType');
+            var textArea = document.getElementById('addendumText');
+            var reasonInput = document.getElementById('addendumReason');
+            var chipsBox = document.getElementById('addendumChips');
+            var countEl = document.getElementById('addendumCount');
+            var previewBox = document.getElementById('addendumPreview');
+            var previewType = document.getElementById('previewType');
+            var previewReason = document.getElementById('previewReason');
+            var previewBody = document.getElementById('previewBody');
+            var previewTime = document.getElementById('previewTime');
+            var form = document.getElementById('addendumForm');
+
+            function updateCount() {
+                countEl.textContent = (textArea.value.length || 0) + ' / 2000 ký tự';
+            }
+
+            function escapeHtml(s) {
+                return String(s || '').replace(/[&<>"']/g, function (c) {
+                    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+                });
+            }
+
+            function renderPreview() {
+                var text = textArea.value.trim();
+                var reason = reasonInput.value.trim();
+                var type = typeSel.value;
+
+                if (!text && !reason && !type) {
+                    previewBox.style.display = 'none';
+                    return;
+                }
+                previewBox.style.display = 'block';
+
+                var typeLabel = (type && templates[type]) ? templates[type].label : '— Chưa chọn loại —';
+                if (type === 'other' && otherLabelInput && otherLabelInput.value.trim()) {
+                    typeLabel += ' · ' + otherLabelInput.value.trim();
+                }
+                previewType.textContent = typeLabel;
+
+                if (reason) {
+                    previewReason.style.display = 'block';
+                    previewReason.innerHTML = '<strong>Lý do:</strong> ' + escapeHtml(reason);
+                } else {
+                    previewReason.style.display = 'none';
+                }
+
+                var html = '';
+                text.split('\n').forEach(function (line) {
+                    var trimmed = line.trim();
+                    if (!trimmed) { html += '<div style="height:6px"></div>'; return; }
+                    var m = trimmed.match(/^(BỔ SUNG|NGƯNG|DUY TRÌ)[:\s](.*)$/i);
+                    if (m) {
+                        var action = m[1].toUpperCase();
+                        var rest = m[2].trim();
+                        var cls = action === 'BỔ SUNG' ? 'ad-line-add' : action === 'NGƯNG' ? 'ad-line-stop' : 'ad-line-keep';
+                        var icon = action === 'BỔ SUNG' ? 'plus' : action === 'NGƯNG' ? 'ban' : 'check';
+                        html += '<div class="ad-line ' + cls + '">'
+                              + '<span class="ad-line-badge"><i class="fas fa-' + icon + '"></i>' + action + '</span>'
+                              + '<span>' + escapeHtml(rest) + '</span>'
+                              + '</div>';
+                    } else {
+                        html += '<div>' + escapeHtml(trimmed) + '</div>';
+                    }
+                });
+                previewBody.innerHTML = html || '<span style="color:#cbd5e1;font-style:italic">Chưa có nội dung...</span>';
+
+                var now = new Date();
+                previewTime.textContent = String(now.getHours()).padStart(2, '0') + ':'
+                    + String(now.getMinutes()).padStart(2, '0') + ' '
+                    + String(now.getDate()).padStart(2, '0') + '/'
+                    + String(now.getMonth() + 1).padStart(2, '0') + '/' + now.getFullYear();
+            }
+
+            // Placeholder gợi ý "Lý do bổ sung" theo loại — giúp BS biết nên ghi gì
+            var reasonPlaceholders = {
+                med:   "VD: Phát hiện huyết áp tăng cao, cần thêm thuốc lợi tiểu",
+                lab:   "VD: Có kết quả XN máu lúc 14:00 — đường huyết 11.5 mmol/L",
+                diag:  "VD: Sau hội chẩn nội tiết, điều chỉnh chẩn đoán sang đái tháo đường týp 2",
+                treat: "VD: BN phản ứng với thuốc cũ, đổi sang phác đồ B",
+                other: "VD: Ghi chú dị ứng thuốc / liên hệ người nhà / lưu ý đặc biệt..."
+            };
+            var defaultReasonPlaceholder = reasonInput.placeholder;
+
+            var otherLabelBox = document.getElementById('addendumOtherLabelBox');
+            var otherLabelInput = document.getElementById('addendumOtherLabel');
+
+            if (typeSel) {
+                typeSel.addEventListener('change', function () {
+                    chipsBox.style.display = this.value === 'med' ? 'block' : 'none';
+
+                    // Hiện ô "Cụ thể loại gì" chỉ khi chọn "Ghi chú khác"
+                    var isOther = this.value === 'other';
+                    otherLabelBox.style.display = isOther ? 'block' : 'none';
+                    if (isOther) {
+                        otherLabelInput.setAttribute('required', 'required');
+                    } else {
+                        otherLabelInput.removeAttribute('required');
+                        otherLabelInput.value = '';
+                    }
+
+                    reasonInput.placeholder = reasonPlaceholders[this.value] || defaultReasonPlaceholder;
+                    renderPreview();
+                });
+
+                if (otherLabelInput) {
+                    otherLabelInput.addEventListener('input', renderPreview);
+                }
+                textArea.addEventListener('input', function () { updateCount(); renderPreview(); });
+                reasonInput.addEventListener('input', renderPreview);
+
+                textArea.addEventListener('keydown', function (e) {
+                    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                        e.preventDefault();
+                        if (form) form.submit();
+                    }
+                });
+
+                window.insertAction = function (action) {
+                    var pos = textArea.selectionStart || textArea.value.length;
+                    var before = textArea.value.slice(0, pos);
+                    var after = textArea.value.slice(pos);
+                    var prefix = (before && !before.endsWith('\n')) ? '\n' : '';
+                    var insert = prefix + action + ': ';
+                    textArea.value = before + insert + after;
+                    textArea.selectionStart = textArea.selectionEnd = (before + insert).length;
+                    textArea.focus();
+                    updateCount();
+                    renderPreview();
+                };
+
+                window.useTemplate = function () {
+                    var t = templates[typeSel.value];
+                    if (!t) {
+                        alert('Vui lòng chọn loại bổ sung trước.');
+                        typeSel.focus();
+                        return;
+                    }
+                    if (!reasonInput.value) reasonInput.value = t.reason;
+                    textArea.value = t.text;
+                    textArea.focus();
+                    updateCount();
+                    renderPreview();
+                };
+
+                updateCount();
+            }
+        })();
+    </script>
+}

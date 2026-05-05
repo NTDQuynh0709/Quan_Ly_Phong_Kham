@@ -1,0 +1,250 @@
+﻿@{
+    ViewBag.Title = "Liên hệ";
+    ViewBag.Nav = "contact";
+    Layout = "~/Views/Shared/_PublicLayout.cshtml";
+}
+
+<style>
+    .ct-hero {
+        background: linear-gradient(135deg, #1d4ed8, #0ea5e9);
+        color: #fff;
+        padding: 54px 0 42px;
+    }
+
+    .ct-hero h1 {
+        font-size: 2.2rem;
+        font-weight: 900;
+        margin: 0 0 10px;
+    }
+
+    .ct-hero p {
+        max-width: 760px;
+        line-height: 1.9;
+        color: rgba(255,255,255,.92);
+        margin: 0;
+    }
+
+    .ct-wrap { background: #f8fafc; padding: 52px 0 68px; }
+
+    .ct-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 18px;
+        margin-bottom: 22px;
+    }
+
+    .ct-card {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 20px;
+        box-shadow: 0 10px 24px rgba(15,23,42,.06);
+        padding: 26px 22px;
+    }
+
+    .ct-icon {
+        width: 54px;
+        height: 54px;
+        border-radius: 14px;
+        background: linear-gradient(135deg, #1d4ed8, #0ea5e9);
+        color: #fff;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        margin-bottom: 14px;
+    }
+
+    .ct-card h5 {
+        font-size: 1rem;
+        font-weight: 800;
+        color: #0f172a;
+        margin-bottom: 8px;
+    }
+
+    .ct-card p {
+        color: #475569;
+        line-height: 1.8;
+        margin: 0;
+        font-size: .94rem;
+    }
+
+    .ct-card a {
+        color: #2563eb;
+        font-weight: 700;
+    }
+
+    .ct-bottom {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
+    }
+
+    .ct-map {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 20px;
+        box-shadow: 0 10px 24px rgba(15,23,42,.06);
+        overflow: hidden;
+        min-height: 380px;
+    }
+
+    .ct-map iframe {
+        width: 100%;
+        height: 100%;
+        min-height: 380px;
+        border: none;
+        display: block;
+    }
+
+    .ct-hours {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 20px;
+        box-shadow: 0 10px 24px rgba(15,23,42,.06);
+        padding: 26px;
+    }
+
+    .ct-hours h5 {
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: #0f172a;
+        margin-bottom: 14px;
+    }
+
+    .ct-hour-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px 0;
+        border-bottom: 1px solid #f1f5f9;
+        color: #334155;
+    }
+
+        .ct-hour-row:last-child { border-bottom: none; }
+
+        .ct-hour-row strong { color: #0f172a; }
+
+    @@media (max-width: 991px) {
+        .ct-grid { grid-template-columns: 1fr; }
+        .ct-bottom { grid-template-columns: 1fr; }
+    }
+</style>
+
+<section class="ct-hero">
+    <div class="container">
+        <h1>Liên hệ với MedicCare</h1>
+        <p>
+            Nếu cần tư vấn về lịch khám, giá khám hoặc các vấn đề y tế khác, vui lòng liên hệ với
+            phòng khám qua các kênh bên dưới. Chúng tôi sẽ phản hồi trong thời gian sớm nhất.
+        </p>
+    </div>
+</section>
+
+<section class="ct-wrap">
+    <div class="container">
+        <div class="ct-grid">
+            <div class="ct-card">
+                <div class="ct-icon"><i class="fas fa-location-dot"></i></div>
+                <h5>Địa chỉ</h5>
+                <p>45 Đường Láng, Phường Ngã Tư Sở, Quận Đống Đa, Thành phố Hà Nội</p>
+            </div>
+
+            <div class="ct-card">
+                <div class="ct-icon"><i class="fas fa-phone"></i></div>
+                <h5>Điện thoại</h5>
+                <p>
+                    Hotline: <a href="tel:02438668899">(024) 3866 8899</a><br />
+                    Tư vấn: 7h30 - 17h00 các ngày trong tuần
+                </p>
+            </div>
+
+            <div class="ct-card">
+                <div class="ct-icon"><i class="fas fa-envelope"></i></div>
+                <h5>Email</h5>
+                <p>
+                    <a href="mailto:info@medicare-clinic.vn">info@medicare-clinic.vn</a><br />
+                    Website: www.medicare-clinic.vn
+                </p>
+            </div>
+        </div>
+
+        <div class="ct-bottom">
+            <div class="ct-map">
+                <iframe src="https://www.google.com/maps?q=45+%C4%90%C6%B0%E1%BB%9Dng+L%C3%A1ng,+%C4%90%E1%BB%91ng+%C4%90a,+H%C3%A0+N%E1%BB%99i&output=embed"
+                        loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+            </div>
+
+            <div class="ct-hours">
+                <h5><i class="fas fa-clock me-2 text-primary"></i>Giờ làm việc</h5>
+
+                <div class="ct-hour-row">
+                    <span>Thứ 2 - Thứ 6</span>
+                    <strong>07:30 - 17:00</strong>
+                </div>
+                <div class="ct-hour-row">
+                    <span>Thứ 7</span>
+                    <strong>07:30 - 12:00</strong>
+                </div>
+                <div class="ct-hour-row">
+                    <span>Chủ nhật</span>
+                    <strong style="color:#dc2626">Nghỉ</strong>
+                </div>
+
+                <div class="alert alert-info mt-3 mb-0" style="font-size:.88rem">
+                    <i class="fas fa-circle-info me-2"></i>
+                    Vui lòng đặt lịch trước để được phục vụ đúng giờ và đúng bác sĩ mong muốn.
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@* ===== Khối "Kết nối nhanh" thay cho form gửi tin nhắn ===== *@
+<section style="background:#f8fafc;padding:60px 0">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-9">
+                <div style="background:linear-gradient(135deg,#1d4ed8 0%,#0ea5e9 100%);border-radius:22px;box-shadow:0 12px 30px rgba(29,78,216,.25);padding:36px 40px;color:#fff;text-align:center">
+                    <div style="font-size:.8rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;opacity:.9;margin-bottom:10px">
+                        <i class="fas fa-headset me-2"></i>Kết nối trực tiếp
+                    </div>
+                    <h3 style="font-weight:900;margin:0 0 10px;font-size:1.65rem">Có câu hỏi hay cần tư vấn?</h3>
+                    <p style="max-width:620px;margin:0 auto 24px;line-height:1.8;opacity:.95">
+                        Vui lòng liên hệ phòng khám qua hotline hoặc email bên dưới. Chúng tôi sẵn sàng hỗ trợ bạn
+                        trong giờ làm việc và phản hồi email trong vòng 24 giờ.
+                    </p>
+
+                    <div class="row g-3 justify-content-center">
+                        <div class="col-md-5">
+                            <a href="tel:02438668899" style="display:flex;align-items:center;gap:14px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);border-radius:14px;padding:16px 20px;color:#fff;text-decoration:none;transition:.2s">
+                                <div style="width:46px;height:46px;border-radius:12px;background:rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                                    <i class="fas fa-phone" style="font-size:1.2rem"></i>
+                                </div>
+                                <div style="text-align:left">
+                                    <div style="font-size:.76rem;opacity:.85;text-transform:uppercase;letter-spacing:.04em">Hotline</div>
+                                    <div style="font-weight:800;font-size:1.15rem">(024) 3866 8899</div>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-md-5">
+                            <a href="mailto:info@medicare-clinic.vn" style="display:flex;align-items:center;gap:14px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);border-radius:14px;padding:16px 20px;color:#fff;text-decoration:none;transition:.2s">
+                                <div style="width:46px;height:46px;border-radius:12px;background:rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                                    <i class="fas fa-envelope" style="font-size:1.2rem"></i>
+                                </div>
+                                <div style="text-align:left">
+                                    <div style="font-size:.76rem;opacity:.85;text-transform:uppercase;letter-spacing:.04em">Email</div>
+                                    <div style="font-weight:800;font-size:1rem">info@medicare-clinic.vn</div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:22px;font-size:.86rem;opacity:.92">
+                        <i class="fas fa-clock me-1"></i>Giờ làm việc:
+                        <strong>Thứ 2 - Thứ 6: 07:30 - 17:00</strong>
+                        · <strong>Thứ 7: 07:30 - 12:00</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

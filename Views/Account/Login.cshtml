@@ -1,0 +1,272 @@
+﻿@{
+    Layout = null;
+    ViewBag.Title = "Đăng nhập";
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Đăng nhập — MedicCare</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            background: #f8fafc;
+        }
+
+        .left-panel {
+            flex: 1;
+            background: linear-gradient(145deg, #1e3a8a, #2563eb, #0ea5e9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 48px;
+            color: #fff;
+        }
+
+        .right-panel {
+            width: 460px;
+            background: #fff;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 48px;
+            box-shadow: -10px 0 30px rgba(15,23,42,.08);
+        }
+
+        .brand {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 14px;
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            line-height: 1.8;
+            opacity: .95;
+            margin-bottom: 32px;
+            max-width: 560px;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            margin-bottom: 22px;
+        }
+
+        .feature-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
+            background: rgba(255,255,255,.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .feature-item h6 {
+            margin: 0 0 6px;
+            font-weight: 700;
+            font-size: .98rem;
+        }
+
+        .feature-item p {
+            margin: 0;
+            font-size: .9rem;
+            line-height: 1.7;
+            opacity: .9;
+        }
+
+        .login-title {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 8px;
+        }
+
+        .login-desc {
+            color: #64748b;
+            font-size: .95rem;
+            line-height: 1.7;
+            margin-bottom: 24px;
+        }
+
+        .form-control {
+            border-radius: 10px;
+            border: 1.5px solid #e2e8f0;
+            padding: 10px 14px;
+            font-size: .9rem;
+            width: 100%;
+        }
+
+            .form-control:focus {
+                border-color: #2563eb;
+                box-shadow: 0 0 0 3px rgba(37,99,235,.12);
+                outline: none;
+            }
+
+        .btn-login {
+            width: 100%;
+            background: #2563eb;
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            padding: 11px;
+            font-size: .95rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: .15s;
+        }
+
+            .btn-login:hover {
+                background: #1d4ed8;
+            }
+
+        .input-wrap {
+            position: relative;
+        }
+
+        .toggle-pw {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            border: none;
+            background: transparent;
+            color: #64748b;
+        }
+
+        .helper {
+            margin-top: 18px;
+            font-size: .82rem;
+            color: #64748b;
+            text-align: center;
+        }
+
+        @@media (max-width: 992px) {
+            .left-panel {
+                display: none;
+            }
+
+            .right-panel {
+                width: 100%;
+                min-height: 100vh;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="left-panel">
+        <div class="brand"><i class="fas fa-hospital-alt me-2"></i>MedicCare</div>
+        <div class="subtitle">
+            Hệ thống quản lý phòng khám hiện đại, hỗ trợ đặt lịch khám, tiếp nhận bệnh nhân,
+            quản lý bác sĩ và theo dõi hồ sơ khám bệnh rõ ràng, minh bạch.
+        </div>
+
+        <div class="feature-item">
+            <div class="feature-icon"><i class="fas fa-calendar-check"></i></div>
+            <div>
+                <h6>Quản lý lịch khám tập trung</h6>
+                <p>Lễ tân dễ dàng tiếp nhận, tạo lịch, xác nhận hoặc cập nhật lịch khám.</p>
+            </div>
+        </div>
+
+        <div class="feature-item">
+            <div class="feature-icon"><i class="fas fa-user-doctor"></i></div>
+            <div>
+                <h6>Theo dõi lịch khám của bác sĩ</h6>
+                <p>Bác sĩ xem danh sách bệnh nhân trong ngày và lập bệnh án ngay trên hệ thống.</p>
+            </div>
+        </div>
+
+        <div class="feature-item">
+            <div class="feature-icon"><i class="fas fa-folder-open"></i></div>
+            <div>
+                <h6>Hồ sơ khám rõ ràng</h6>
+                <p>Quản trị viên có thể theo dõi toàn bộ lịch sử khám của từng bệnh nhân ở một nơi.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="right-panel">
+        <div class="login-title">Đăng nhập hệ thống</div>
+        <div class="login-desc">Sử dụng tài khoản được cấp để truy cập hệ thống nội bộ MedicCare.</div>
+
+        @{
+            var allErrors = ViewData.ModelState
+                .Where(kv => kv.Value.Errors.Count > 0)
+                .SelectMany(kv => kv.Value.Errors.Select(e => e.ErrorMessage))
+                .Where(m => !string.IsNullOrWhiteSpace(m))
+                .Distinct()
+                .ToList();
+        }
+        @if (allErrors.Count > 0)
+        {
+            <div class="alert alert-danger mb-3" style="border-radius:10px;font-size:.9rem">
+                @foreach (var msg in allErrors)
+                {
+                    <div><i class="fas fa-circle-exclamation me-2"></i>@msg</div>
+                }
+            </div>
+        }
+
+        @using (Html.BeginForm("Login", "Account", FormMethod.Post, new { novalidate = "novalidate" }))
+        {
+            @Html.AntiForgeryToken()
+
+            <div class="mb-3">
+                <label class="form-label fw-bold">Tên đăng nhập</label>
+                <input name="username" value="@ViewBag.InputUsername"
+                       class="form-control" placeholder="Nhập tên đăng nhập"
+                       required title="Vui lòng nhập tên đăng nhập." />
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label fw-bold">Mật khẩu</label>
+                <div class="input-wrap">
+                    <input id="passwordInput" name="password" type="password"
+                           class="form-control" placeholder="Nhập mật khẩu"
+                           required title="Vui lòng nhập mật khẩu." />
+                    <button type="button" class="toggle-pw" onclick="togglePassword()">
+                        <i id="pwIcon" class="fas fa-eye"></i>
+                    </button>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-login">
+                <i class="fas fa-right-to-bracket me-2"></i>Đăng nhập
+            </button>
+        }
+
+        <div class="helper">
+            <i class="fas fa-circle-info me-1"></i>Sử dụng tài khoản nội bộ được phòng khám cấp
+        </div>
+    </div>
+
+    <script>
+        function togglePassword() {
+            var input = document.getElementById('passwordInput');
+            var icon = document.getElementById('pwIcon');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.className = 'fas fa-eye-slash';
+            } else {
+                input.type = 'password';
+                icon.className = 'fas fa-eye';
+            }
+        }
+    </script>
+</body>
+</html>

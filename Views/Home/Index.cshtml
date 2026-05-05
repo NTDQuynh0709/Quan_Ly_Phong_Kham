@@ -1,0 +1,964 @@
+﻿@using web.Models
+@{
+    ViewBag.Title = "Trang chủ";
+    ViewBag.Nav = "home";
+    Layout = "~/Views/Shared/_PublicLayout.cshtml";
+
+    var departments = ViewBag.Departments as List<Department>;
+    var featuredDoctors = ViewBag.FeaturedDoctors as List<Doctor>;
+
+    int doctorCount = ViewBag.DoctorCount != null ? (int)ViewBag.DoctorCount : 0;
+    int patientCount = ViewBag.PatientCount != null ? (int)ViewBag.PatientCount : 0;
+    int deptCount = ViewBag.DepartmentCount != null ? (int)ViewBag.DepartmentCount : 0;
+    int apptCount = ViewBag.AppointmentCount != null ? (int)ViewBag.AppointmentCount : 0;
+
+    string[] deptIcons = {
+        "fa-stethoscope", "fa-baby", "fa-heart-pulse", "fa-hand-dots",
+        "fa-ear-listen", "fa-bone", "fa-pills", "fa-flask"
+    };
+
+    string[] deptColors = {
+        "linear-gradient(135deg,#2563eb,#60a5fa)",
+        "linear-gradient(135deg,#db2777,#f9a8d4)",
+        "linear-gradient(135deg,#dc2626,#fb7185)",
+        "linear-gradient(135deg,#d97706,#fbbf24)",
+        "linear-gradient(135deg,#0d9488,#5eead4)",
+        "linear-gradient(135deg,#7c3aed,#c084fc)",
+        "linear-gradient(135deg,#16a34a,#4ade80)",
+        "linear-gradient(135deg,#0891b2,#22d3ee)"
+    };
+}
+
+<style>
+    /* ===== HERO ===== */
+    .hm-hero {
+        background: linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 55%, #0ea5e9 100%);
+        color: #fff;
+        padding: 68px 0 80px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .hm-hero::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image: radial-gradient(rgba(255,255,255,.06) 1px, transparent 1px);
+        background-size: 22px 22px;
+        pointer-events: none;
+    }
+
+    .hm-hero-grid {
+        display: grid;
+        grid-template-columns: 1.1fr 0.9fr;
+        gap: 40px;
+        align-items: center;
+        position: relative;
+    }
+
+    .hm-kicker {
+        display: inline-block;
+        background: rgba(255,255,255,.14);
+        border: 1px solid rgba(255,255,255,.22);
+        padding: 8px 14px;
+        border-radius: 999px;
+        font-size: .82rem;
+        font-weight: 700;
+        letter-spacing: .04em;
+        text-transform: uppercase;
+        margin-bottom: 18px;
+    }
+
+    .hm-title {
+        font-size: 2.8rem;
+        line-height: 1.14;
+        font-weight: 900;
+        margin: 0 0 16px;
+    }
+
+        .hm-title span {
+            background: linear-gradient(90deg, #bae6fd, #fff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+    .hm-desc {
+        font-size: 1.02rem;
+        line-height: 1.85;
+        color: rgba(255,255,255,.93);
+        max-width: 560px;
+        margin-bottom: 26px;
+    }
+
+    .hm-actions {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 30px;
+    }
+
+    .hm-btn-primary {
+        background: #16a34a;
+        color: #fff;
+        font-weight: 800;
+        border-radius: 12px;
+        padding: 13px 20px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border: none;
+    }
+
+        .hm-btn-primary:hover {
+            background: #15803d;
+            color: #fff;
+        }
+
+    .hm-btn-outline {
+        border: 1.5px solid rgba(255,255,255,.4);
+        color: #fff;
+        border-radius: 12px;
+        padding: 13px 20px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 700;
+        background: rgba(255,255,255,.08);
+    }
+
+        .hm-btn-outline:hover {
+            background: rgba(255,255,255,.18);
+            color: #fff;
+        }
+
+    .hm-stats {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+        max-width: 520px;
+    }
+
+    .hm-stat {
+        background: rgba(255,255,255,.12);
+        border: 1px solid rgba(255,255,255,.2);
+        border-radius: 16px;
+        padding: 14px 16px;
+        backdrop-filter: blur(6px);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .hm-stat-ico {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        background: rgba(255,255,255,.18);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+        flex-shrink: 0;
+    }
+
+    .hm-stat-val {
+        font-size: 1.5rem;
+        font-weight: 900;
+        line-height: 1;
+    }
+
+    .hm-stat-lbl {
+        font-size: .78rem;
+        color: rgba(255,255,255,.88);
+    }
+
+    /* hero image panel */
+    .hm-hero-media {
+        position: relative;
+        border-radius: 26px;
+        overflow: hidden;
+        box-shadow: 0 26px 54px rgba(7,24,77,.4);
+        background: rgba(255,255,255,.08);
+        aspect-ratio: 4 / 3;
+    }
+
+        .hm-hero-media img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            object-position: center;
+            display: block;
+            background: #fff;
+        }
+
+    .hm-hero-chip {
+        position: absolute;
+        right: 18px;
+        bottom: 18px;
+        background: rgba(255,255,255,.97);
+        color: #0f172a;
+        border-radius: 16px;
+        padding: 14px 18px;
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        box-shadow: 0 14px 30px rgba(15,23,42,.2);
+        max-width: 70%;
+    }
+
+        .hm-hero-chip .ico {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            background: #dcfce7;
+            color: #15803d;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 1rem;
+        }
+
+    .hm-hero-chip-t1 {
+        font-weight: 800;
+        font-size: .94rem;
+    }
+
+    .hm-hero-chip-t2 {
+        color: #64748b;
+        font-size: .8rem;
+    }
+
+    /* ===== SECTIONS ===== */
+    .hm-section { padding: 72px 0; }
+    .hm-section-alt { background: #f4f7fb; }
+
+    .hm-sec-head {
+        text-align: center;
+        max-width: 760px;
+        margin: 0 auto 40px;
+    }
+
+    .hm-sec-kicker {
+        display: inline-block;
+        background: #dbeafe;
+        color: #1d4ed8;
+        font-size: .76rem;
+        font-weight: 800;
+        border-radius: 999px;
+        padding: 6px 13px;
+        margin-bottom: 14px;
+        letter-spacing: .04em;
+        text-transform: uppercase;
+    }
+
+    .hm-sec-title {
+        font-size: 2rem;
+        font-weight: 900;
+        color: #0f172a;
+        margin-bottom: 12px;
+        line-height: 1.2;
+    }
+
+    .hm-sec-desc {
+        color: #64748b;
+        line-height: 1.9;
+        margin: 0;
+    }
+
+    /* DEPARTMENTS */
+    .hm-dept-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 18px;
+    }
+
+    .hm-dept-card {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 20px;
+        box-shadow: 0 10px 24px rgba(15,23,42,.06);
+        padding: 24px 20px;
+        text-align: center;
+        transition: .2s ease;
+        display: block;
+        color: inherit;
+        text-decoration: none;
+    }
+
+        .hm-dept-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 38px rgba(37,99,235,.14);
+            border-color: #bfdbfe;
+        }
+
+    .hm-dept-icon {
+        width: 58px;
+        height: 58px;
+        border-radius: 16px;
+        color: #fff;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.35rem;
+        margin-bottom: 14px;
+    }
+
+    .hm-dept-name {
+        font-size: 1.04rem;
+        font-weight: 800;
+        color: #0f172a;
+        margin-bottom: 8px;
+    }
+
+    .hm-dept-desc {
+        color: #64748b;
+        font-size: .86rem;
+        line-height: 1.75;
+        min-height: 46px;
+        margin: 0;
+    }
+
+    /* FEATURED DOCTORS */
+    .hm-feat-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 20px;
+    }
+
+    .hm-doctor-card {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 22px;
+        overflow: hidden;
+        box-shadow: 0 12px 26px rgba(15,23,42,.06);
+        transition: .2s ease;
+        display: flex;
+        flex-direction: column;
+    }
+
+        .hm-doctor-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 36px rgba(15,23,42,.1);
+        }
+
+    .hm-doctor-media {
+        height: 240px;
+        background: linear-gradient(135deg, #dbeafe, #eff6ff);
+        overflow: hidden;
+    }
+
+        .hm-doctor-media img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center top;
+            display: block;
+        }
+
+    .hm-doctor-body {
+        padding: 16px 18px 18px;
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+    }
+
+    .hm-doctor-name {
+        font-size: 1.04rem;
+        font-weight: 900;
+        color: #0f172a;
+        margin-bottom: 3px;
+    }
+
+    .hm-doctor-degree {
+        color: #2563eb;
+        font-weight: 700;
+        font-size: .86rem;
+        margin-bottom: 10px;
+        min-height: 20px;
+    }
+
+    .hm-doctor-dept {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        background: #eff6ff;
+        color: #1d4ed8;
+        font-size: .74rem;
+        font-weight: 700;
+        border-radius: 999px;
+        padding: 4px 10px;
+        margin-bottom: 12px;
+        align-self: flex-start;
+    }
+
+    .hm-doctor-price {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 0;
+        border-top: 1px dashed #e2e8f0;
+        border-bottom: 1px dashed #e2e8f0;
+        margin-bottom: 12px;
+    }
+
+        .hm-doctor-price small {
+            color: #64748b;
+            font-size: .74rem;
+            font-weight: 700;
+        }
+
+        .hm-doctor-price strong {
+            color: #0f172a;
+            font-size: 1rem;
+            font-weight: 900;
+        }
+
+    .hm-doctor-actions {
+        display: flex;
+        gap: 6px;
+        margin-top: auto;
+    }
+
+        .hm-doctor-actions .btn {
+            font-size: .82rem;
+            padding: 8px 10px;
+        }
+
+    /* STEPS */
+    .hm-steps {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 22px;
+    }
+
+    .hm-step {
+        position: relative;
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 20px;
+        padding: 32px 22px 22px;
+        box-shadow: 0 10px 22px rgba(15,23,42,.05);
+    }
+
+    .hm-step-num {
+        position: absolute;
+        top: -18px;
+        left: 22px;
+        width: 46px;
+        height: 46px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #1d4ed8, #0ea5e9);
+        color: #fff;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 900;
+        font-size: 1.05rem;
+        box-shadow: 0 8px 18px rgba(29,78,216,.35);
+    }
+
+    .hm-step-icon {
+        color: #1d4ed8;
+        font-size: 1.5rem;
+        margin-bottom: 10px;
+    }
+
+    .hm-step-title {
+        font-size: 1rem;
+        font-weight: 800;
+        color: #0f172a;
+        margin-bottom: 6px;
+    }
+
+    .hm-step-desc {
+        color: #64748b;
+        font-size: .88rem;
+        line-height: 1.8;
+        margin: 0;
+    }
+
+    /* TESTIMONIAL */
+    .hm-tm-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 22px;
+    }
+
+    .hm-tm-card {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 22px;
+        box-shadow: 0 12px 26px rgba(15,23,42,.06);
+        padding: 28px 24px 24px;
+        position: relative;
+        transition: .2s ease;
+    }
+
+        .hm-tm-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 36px rgba(15,23,42,.1);
+        }
+
+    .hm-tm-quote-ico {
+        position: absolute;
+        top: -18px;
+        left: 24px;
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #1d4ed8, #0ea5e9);
+        color: #fff;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+        box-shadow: 0 8px 18px rgba(29,78,216,.3);
+    }
+
+    .hm-tm-stars {
+        color: #facc15;
+        font-size: .88rem;
+        margin: 8px 0 12px;
+    }
+
+    .hm-tm-text {
+        color: #475569;
+        line-height: 1.85;
+        font-size: .94rem;
+        margin-bottom: 16px;
+        font-style: italic;
+    }
+
+    .hm-tm-user {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        padding-top: 14px;
+        border-top: 1px dashed #e2e8f0;
+    }
+
+    .hm-tm-avatar {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #dbeafe, #eff6ff);
+        color: #1d4ed8;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 900;
+        flex-shrink: 0;
+    }
+
+    .hm-tm-name {
+        font-weight: 800;
+        color: #0f172a;
+        font-size: .94rem;
+    }
+
+    .hm-tm-role {
+        color: #64748b;
+        font-size: .8rem;
+    }
+
+    /* CTA */
+    .hm-cta {
+        background: linear-gradient(135deg, #0f172a 0%, #1d4ed8 100%);
+        color: #fff;
+        border-radius: 28px;
+        padding: 38px 34px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 22px;
+        flex-wrap: wrap;
+    }
+
+    .hm-cta-title {
+        font-size: 1.7rem;
+        font-weight: 900;
+        margin: 0 0 8px;
+    }
+
+    .hm-cta-desc {
+        margin: 0;
+        color: rgba(255,255,255,.88);
+        line-height: 1.85;
+        max-width: 620px;
+    }
+
+    /* EMPTY STATE */
+    .hm-empty {
+        text-align: center;
+        padding: 40px 20px;
+        color: #94a3b8;
+    }
+
+        .hm-empty i {
+            font-size: 2rem;
+            opacity: .5;
+            margin-bottom: 10px;
+        }
+
+    /* RESPONSIVE */
+    @@media (max-width: 1200px) {
+        .hm-dept-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        .hm-feat-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        .hm-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .hm-tm-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @@media (max-width: 991px) {
+        .hm-hero-grid { grid-template-columns: 1fr; gap: 32px; }
+        .hm-hero-media { max-width: 520px; margin: 0 auto; }
+        .hm-title { font-size: 2.1rem; }
+        .hm-dept-grid,
+        .hm-feat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @@media (max-width: 640px) {
+        .hm-hero { padding: 52px 0 62px; }
+        .hm-title { font-size: 1.75rem; }
+        .hm-section { padding: 52px 0; }
+        .hm-sec-title { font-size: 1.55rem; }
+        .hm-dept-grid,
+        .hm-feat-grid,
+        .hm-steps,
+        .hm-tm-grid { grid-template-columns: 1fr; }
+        .hm-stats { grid-template-columns: 1fr; }
+        .hm-cta { padding: 28px 22px; text-align: center; justify-content: center; }
+    }
+</style>
+
+<!-- HERO -->
+<section class="hm-hero">
+    <div class="container">
+        <div class="hm-hero-grid">
+            <div>
+                <span class="hm-kicker">Phòng khám đa khoa tại Hà Nội</span>
+
+                <h1 class="hm-title">
+                    Chăm sóc sức khỏe<br />
+                    <span>thông minh & tận tâm</span>
+                </h1>
+
+                <p class="hm-desc">
+                    MedicCare cung cấp dịch vụ khám ngoại trú, tư vấn chuyên khoa, quản lý lịch hẹn
+                    và theo dõi hồ sơ bệnh án rõ ràng. Đặt lịch online 24/7 — minh bạch giá khám,
+                    minh bạch bác sĩ.
+                </p>
+
+                <div class="hm-actions">
+                    <a href="@Url.Action("Create", "Booking")" class="hm-btn-primary">
+                        <i class="fas fa-calendar-check"></i>Đặt lịch ngay
+                    </a>
+                    <a href="@Url.Action("Doctors", "Home")" class="hm-btn-outline">
+                        <i class="fas fa-user-doctor"></i>Xem bác sĩ
+                    </a>
+                    <a href="@Url.Action("Lookup", "Booking")" class="hm-btn-outline">
+                        <i class="fas fa-search"></i>Tra cứu lịch
+                    </a>
+                </div>
+
+                <div class="hm-stats">
+                    <div class="hm-stat">
+                        <div class="hm-stat-ico"><i class="fas fa-user-doctor"></i></div>
+                        <div>
+                            <div class="hm-stat-val">@doctorCount+</div>
+                            <div class="hm-stat-lbl">Bác sĩ chuyên khoa</div>
+                        </div>
+                    </div>
+
+                    <div class="hm-stat">
+                        <div class="hm-stat-ico"><i class="fas fa-hospital"></i></div>
+                        <div>
+                            <div class="hm-stat-val">@deptCount</div>
+                            <div class="hm-stat-lbl">Chuyên khoa</div>
+                        </div>
+                    </div>
+
+                    <div class="hm-stat">
+                        <div class="hm-stat-ico"><i class="fas fa-user-injured"></i></div>
+                        <div>
+                            <div class="hm-stat-val">@patientCount+</div>
+                            <div class="hm-stat-lbl">Bệnh nhân</div>
+                        </div>
+                    </div>
+
+                    <div class="hm-stat">
+                        <div class="hm-stat-ico"><i class="fas fa-calendar-check"></i></div>
+                        <div>
+                            <div class="hm-stat-val">@apptCount+</div>
+                            <div class="hm-stat-lbl">Lượt khám</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <div class="hm-hero-media">
+                    <img src="@Url.Content("~/Content/images/site/home.jpg")"
+                         alt="Phòng khám MedicCare"
+                         onerror="this.src='@Url.Content("~/Content/images/doctors/default-doctor.jpg")'" />
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- DEPARTMENTS -->
+<section class="hm-section">
+    <div class="container">
+        <div class="hm-sec-head">
+            <span class="hm-sec-kicker">Chuyên khoa</span>
+            <h2 class="hm-sec-title">Khám theo đúng chuyên khoa bạn cần</h2>
+            <p class="hm-sec-desc">
+                Danh sách @(deptCount > 0 ? deptCount + " chuyên khoa" : "chuyên khoa") được sắp xếp rõ ràng,
+                giúp bệnh nhân chọn đúng bác sĩ phù hợp ngay từ đầu.
+            </p>
+        </div>
+
+        @if (departments != null && departments.Any())
+        {
+            <div class="hm-dept-grid">
+                @for (int i = 0; i < departments.Count; i++)
+                {
+                    var item = departments[i];
+                    var ico = deptIcons[i % deptIcons.Length];
+                    var col = deptColors[i % deptColors.Length];
+
+                    <a class="hm-dept-card"
+                       href="@Url.Action("Doctors", "Home", new { departmentId = item.Id })">
+                        <div class="hm-dept-icon" style="background:@col">
+                            <i class="fas @ico"></i>
+                        </div>
+                        <div class="hm-dept-name">@item.DepartmentName</div>
+                        <p class="hm-dept-desc">
+                            @(string.IsNullOrWhiteSpace(item.Description) ? "Khám, tư vấn và theo dõi điều trị theo chuyên khoa." : item.Description)
+                        </p>
+                    </a>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="hm-empty">
+                <i class="fas fa-hospital"></i>
+                <p>Chưa có chuyên khoa nào.</p>
+            </div>
+        }
+    </div>
+</section>
+
+<!-- FEATURED DOCTORS -->
+<section class="hm-section hm-section-alt">
+    <div class="container">
+        <div class="hm-sec-head">
+            <span class="hm-sec-kicker">Đội ngũ bác sĩ</span>
+            <h2 class="hm-sec-title">Bác sĩ chuyên môn cao, giàu kinh nghiệm</h2>
+            <p class="hm-sec-desc">
+                Hồ sơ bác sĩ được công khai rõ ràng về chuyên khoa, kinh nghiệm và giá khám
+                để bệnh nhân dễ dàng lựa chọn.
+            </p>
+        </div>
+
+        @if (featuredDoctors != null && featuredDoctors.Any())
+        {
+            <div class="hm-feat-grid">
+                @foreach (var d in featuredDoctors)
+                {
+                    var img = web.Helpers.DoctorAvatarHelper.GetAvatarUrl(d.ImageUrl, d.FullName);
+                    var fallback = web.Helpers.DoctorAvatarHelper.GetAvatarDataUri(d.FullName);
+
+                    <div class="hm-doctor-card">
+                        <div class="hm-doctor-media">
+                            <img src="@img" alt="@d.FullName"
+                                 onerror="this.onerror=null;this.src='@fallback'" />
+                        </div>
+
+                        <div class="hm-doctor-body">
+                            <div class="hm-doctor-name">@d.FullName</div>
+                            <div class="hm-doctor-degree">@(string.IsNullOrWhiteSpace(d.Degree) ? "Bác sĩ" : d.Degree)</div>
+
+                            <span class="hm-doctor-dept">
+                                <i class="fas fa-hospital"></i>
+                                @(d.Department != null ? d.Department.DepartmentName : d.Specialty)
+                            </span>
+
+                            <div class="hm-doctor-price">
+                                <small>Giá khám</small>
+                                <strong>@String.Format("{0:N0} đ", d.ConsultationFee)</strong>
+                            </div>
+
+                            <div class="hm-doctor-actions">
+                                <a href="@Url.Action("DoctorDetail", "Home", new { id = d.Id })"
+                                   class="btn btn-outline-primary flex-fill">
+                                    <i class="fas fa-eye me-1"></i>Xem
+                                </a>
+                                <a href="@Url.Action("Create", "Booking", new { doctorId = d.Id })"
+                                   class="btn btn-primary flex-fill">
+                                    <i class="fas fa-calendar-check me-1"></i>Đặt
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <div class="text-center mt-5">
+                <a href="@Url.Action("Doctors", "Home")" class="btn btn-primary btn-lg">
+                    <i class="fas fa-user-doctor me-2"></i>Xem tất cả bác sĩ
+                </a>
+            </div>
+        }
+        else
+        {
+            <div class="hm-empty">
+                <i class="fas fa-user-doctor"></i>
+                <p>Chưa có bác sĩ nào được hiển thị.</p>
+            </div>
+        }
+    </div>
+</section>
+
+<!-- STEPS / PROCESS -->
+<section class="hm-section">
+    <div class="container">
+        <div class="hm-sec-head">
+            <span class="hm-sec-kicker">Quy trình đặt lịch</span>
+            <h2 class="hm-sec-title">4 bước đơn giản để đặt lịch khám</h2>
+            <p class="hm-sec-desc">
+                Từ việc chọn chuyên khoa đến xác nhận lịch hẹn — quy trình ngắn gọn, rõ ràng
+                để bệnh nhân chủ động hơn.
+            </p>
+        </div>
+
+        <div class="hm-steps">
+            <div class="hm-step">
+                <div class="hm-step-num">01</div>
+                <div class="hm-step-icon"><i class="fas fa-hospital"></i></div>
+                <div class="hm-step-title">Chọn chuyên khoa</div>
+                <p class="hm-step-desc">Xem danh sách chuyên khoa phù hợp với triệu chứng hoặc nhu cầu khám.</p>
+            </div>
+
+            <div class="hm-step">
+                <div class="hm-step-num">02</div>
+                <div class="hm-step-icon"><i class="fas fa-user-doctor"></i></div>
+                <div class="hm-step-title">Chọn bác sĩ</div>
+                <p class="hm-step-desc">Thông tin bác sĩ rõ ràng: học vị, kinh nghiệm, giá khám và lịch làm việc.</p>
+            </div>
+
+            <div class="hm-step">
+                <div class="hm-step-num">03</div>
+                <div class="hm-step-icon"><i class="fas fa-calendar-check"></i></div>
+                <div class="hm-step-title">Đặt lịch online</div>
+                <p class="hm-step-desc">Điền thông tin cá nhân, chọn khung giờ và gửi yêu cầu đặt lịch trong vài bước.</p>
+            </div>
+
+            <div class="hm-step">
+                <div class="hm-step-num">04</div>
+                <div class="hm-step-icon"><i class="fas fa-file-medical"></i></div>
+                <div class="hm-step-title">Tra cứu lịch hẹn</div>
+                <p class="hm-step-desc">Dùng CCCD hoặc số điện thoại để xem lại lịch khám, trạng thái và phí khám.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- TESTIMONIAL -->
+<section class="hm-section hm-section-alt">
+    <div class="container">
+        <div class="hm-sec-head">
+            <span class="hm-sec-kicker">Phản hồi thực tế</span>
+            <h2 class="hm-sec-title">Bệnh nhân nói gì về MedicCare?</h2>
+            <p class="hm-sec-desc">
+                Những chia sẻ từ bệnh nhân đã sử dụng dịch vụ đặt lịch và khám chữa bệnh tại phòng khám.
+            </p>
+        </div>
+
+        <div class="hm-tm-grid">
+            <div class="hm-tm-card">
+                <div class="hm-tm-quote-ico"><i class="fas fa-quote-right"></i></div>
+                <div class="hm-tm-stars">
+                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i><i class="fas fa-star"></i>
+                </div>
+                <p class="hm-tm-text">
+                    Đặt lịch trên website rất nhanh, bác sĩ khám đúng giờ và giải thích kỹ càng.
+                    Mình biết trước giá khám nên không bất ngờ về chi phí.
+                </p>
+                <div class="hm-tm-user">
+                    <div class="hm-tm-avatar">A</div>
+                    <div>
+                        <div class="hm-tm-name">Chị Mai Anh</div>
+                        <div class="hm-tm-role">Bệnh nhân khoa Nội tổng quát</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hm-tm-card">
+                <div class="hm-tm-quote-ico"><i class="fas fa-quote-right"></i></div>
+                <div class="hm-tm-stars">
+                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i><i class="fas fa-star"></i>
+                </div>
+                <p class="hm-tm-text">
+                    Con mình khám nhi khoa, bác sĩ rất tận tâm và theo dõi kỹ. Có tra cứu lại
+                    được lịch hẹn bằng số điện thoại, rất tiện khi cần xem lại.
+                </p>
+                <div class="hm-tm-user">
+                    <div class="hm-tm-avatar" style="background:linear-gradient(135deg,#fce7f3,#fbcfe8);color:#be185d">M</div>
+                    <div>
+                        <div class="hm-tm-name">Anh Minh Tùng</div>
+                        <div class="hm-tm-role">Phụ huynh - khoa Nhi khoa</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hm-tm-card">
+                <div class="hm-tm-quote-ico"><i class="fas fa-quote-right"></i></div>
+                <div class="hm-tm-stars">
+                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
+                </div>
+                <p class="hm-tm-text">
+                    Thông tin bác sĩ công khai rõ ràng, dễ chọn. Phòng khám sạch sẽ, nhân viên
+                    lễ tân nhiệt tình. Sẽ quay lại khi cần tái khám.
+                </p>
+                <div class="hm-tm-user">
+                    <div class="hm-tm-avatar" style="background:linear-gradient(135deg,#dcfce7,#bbf7d0);color:#15803d">Q</div>
+                    <div>
+                        <div class="hm-tm-name">Bác Quang Huy</div>
+                        <div class="hm-tm-role">Bệnh nhân khoa Tim mạch</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA -->
+<section class="hm-section" style="padding-top:0;padding-bottom:72px;">
+    <div class="container">
+        <div class="hm-cta">
+            <div>
+                <h3 class="hm-cta-title">Sẵn sàng đặt lịch khám tại MedicCare?</h3>
+                <p class="hm-cta-desc">
+                    Chọn bác sĩ, xem giá khám và gửi yêu cầu đặt lịch nhanh trong vài phút.
+                    Phòng khám sẽ xác nhận lịch hẹn sớm nhất có thể.
+                </p>
+            </div>
+
+            <div class="d-flex gap-2 flex-wrap">
+                <a href="@Url.Action("Create", "Booking")" class="hm-btn-primary">
+                    <i class="fas fa-calendar-plus"></i>Đặt lịch ngay
+                </a>
+                <a href="@Url.Action("Lookup", "Booking")" class="hm-btn-outline">
+                    <i class="fas fa-magnifying-glass"></i>Tra cứu lịch hẹn
+                </a>
+            </div>
+        </div>
+    </div>
+</section>

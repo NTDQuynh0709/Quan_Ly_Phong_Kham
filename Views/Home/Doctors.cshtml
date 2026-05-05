@@ -1,0 +1,325 @@
+﻿@model IEnumerable<web.Models.Doctor>
+@{
+    ViewBag.Title = "Đội ngũ bác sĩ";
+    ViewBag.Nav = "doctors";
+    Layout = "~/Views/Shared/_PublicLayout.cshtml";
+}
+
+<style>
+    .dl-hero {
+        background: linear-gradient(135deg, #1d4ed8, #0ea5e9);
+        color: #fff;
+        padding: 46px 0 32px;
+        margin-top: -10px;
+        position: relative;
+        z-index: 0;
+    }
+
+    .dl-hero-title {
+        font-size: 1.9rem;
+        font-weight: 900;
+        margin-bottom: 8px;
+    }
+
+    .dl-hero-desc {
+        max-width: 780px;
+        margin: 0;
+        color: rgba(255,255,255,.92);
+        line-height: 1.9;
+    }
+
+    .dl-wrap {
+        padding: 30px 0 62px;
+        background: #f8fafc;
+    }
+
+    .dl-filter {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 22px;
+        box-shadow: 0 10px 22px rgba(15,23,42,.06);
+        padding: 20px;
+        margin-top: -24px;
+        position: relative;
+        z-index: 2;
+        margin-bottom: 24px;
+    }
+
+    .dl-result-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        align-items: center;
+        margin-bottom: 18px;
+        flex-wrap: wrap;
+    }
+
+    .dl-result-title {
+        font-size: 1.2rem;
+        font-weight: 900;
+        color: #0f172a;
+    }
+
+    .dl-count {
+        color: #64748b;
+        font-size: .88rem;
+    }
+
+    .dl-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 22px;
+    }
+
+    .dl-card {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 24px;
+        overflow: hidden;
+        box-shadow: 0 10px 24px rgba(15,23,42,.06);
+        height: 100%;
+        transition: .18s ease;
+    }
+
+        .dl-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 18px 34px rgba(15,23,42,.1);
+        }
+
+    .dl-media {
+        height: 280px;
+        background: linear-gradient(135deg, #dbeafe, #eff6ff);
+        overflow: hidden;
+        position: relative;
+    }
+
+        .dl-media img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center top;
+            display: block;
+        }
+
+    .dl-body {
+        padding: 18px 18px 20px;
+    }
+
+    .dl-name {
+        font-size: 1.14rem;
+        font-weight: 900;
+        color: #0f172a;
+        margin-bottom: 4px;
+    }
+
+    .dl-degree {
+        color: #2563eb;
+        font-size: .92rem;
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+
+    .dl-specialty {
+        color: #334155;
+        font-weight: 700;
+        margin-bottom: 6px;
+    }
+
+    .dl-sub {
+        color: #64748b;
+        font-size: .88rem;
+        line-height: 1.8;
+        margin-bottom: 14px;
+        min-height: 46px;
+    }
+
+    .dl-meta {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-bottom: 14px;
+    }
+
+    .dl-pill {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        padding: 10px 12px;
+    }
+
+    .dl-pill-label {
+        font-size: .74rem;
+        color: #64748b;
+        font-weight: 700;
+        margin-bottom: 3px;
+    }
+
+    .dl-pill-value {
+        font-size: .88rem;
+        color: #0f172a;
+        font-weight: 800;
+    }
+
+    .dl-schedule {
+        background: #eff6ff;
+        border: 1px solid #dbeafe;
+        border-radius: 14px;
+        padding: 10px 12px;
+        color: #1d4ed8;
+        font-size: .84rem;
+        font-weight: 700;
+        margin-bottom: 16px;
+    }
+
+    .dl-empty {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 22px;
+        box-shadow: 0 10px 20px rgba(15,23,42,.05);
+        padding: 42px 20px;
+        text-align: center;
+        color: #64748b;
+    }
+
+        .dl-empty i {
+            font-size: 2.1rem;
+            margin-bottom: 10px;
+            color: #94a3b8;
+        }
+
+    @@media (max-width: 1200px) {
+        .dl-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @@media (max-width: 767px) {
+        .dl-hero-title {
+            font-size: 1.9rem;
+        }
+
+        .dl-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .dl-meta {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<section class="dl-hero" style="margin-top:-20px;padding-top:56px;position:relative;z-index:0;">
+    <div class="container">
+        <div class="dl-hero-title">Đội ngũ bác sĩ tại MedicCare</div>
+        <p class="dl-hero-desc">
+            Danh sách bác sĩ đang công tác tại phòng khám, hiển thị rõ chuyên khoa, kinh nghiệm và chi phí khám
+            để bệnh nhân dễ dàng lựa chọn phù hợp.
+        </p>
+    </div>
+</section>
+
+<section class="dl-wrap">
+    <div class="container">
+        <div class="dl-filter">
+            @using (Html.BeginForm("Doctors", "Home", FormMethod.Get))
+            {
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-5">
+                        <label class="form-label">Tìm bác sĩ hoặc chuyên khoa</label>
+                        <input type="text"
+                               name="q"
+                               value="@ViewBag.Query"
+                               class="form-control"
+                               placeholder="Nhập tên bác sĩ, chuyên khoa..." />
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Lọc theo khoa</label>
+                        @Html.DropDownList("departmentId", ViewBag.Departments as SelectList, "Tất cả chuyên khoa", new { @class = "form-select" })
+                    </div>
+
+                    <div class="col-md-2">
+                        <label class="form-label">Sắp xếp</label>
+                        <select name="sort" class="form-select">
+                            <option value="name" @(ViewBag.Sort == null || ViewBag.Sort.ToString() == "name" ? "selected" : "")>Tên A-Z</option>
+                            <option value="fee" @(ViewBag.Sort != null && ViewBag.Sort.ToString() == "fee" ? "selected" : "")>Giá thấp → cao</option>
+                            <option value="experience" @(ViewBag.Sort != null && ViewBag.Sort.ToString() == "experience" ? "selected" : "")>Kinh nghiệm nhiều nhất</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-search me-2"></i>Lọc
+                        </button>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="dl-result-head">
+            <div class="dl-result-title">Danh sách bác sĩ</div>
+            <div class="dl-count">@Model.Count() kết quả phù hợp</div>
+        </div>
+
+        @if (!Model.Any())
+        {
+            <div class="dl-empty">
+                <i class="fas fa-user-doctor"></i>
+                <div style="font-weight:800;color:#0f172a;margin-bottom:6px;">Không tìm thấy bác sĩ phù hợp</div>
+                <div>Hãy thử đổi từ khóa tìm kiếm hoặc chọn lại chuyên khoa.</div>
+            </div>
+        }
+        else
+        {
+            <div class="dl-grid">
+                @foreach (var d in Model)
+                {
+                    var img = web.Helpers.DoctorAvatarHelper.GetAvatarUrl(d.ImageUrl, d.FullName);
+                    var fallback = web.Helpers.DoctorAvatarHelper.GetAvatarDataUri(d.FullName);
+
+                    <div class="dl-card">
+                        <div class="dl-media">
+                            <img src="@img" alt="@d.FullName"
+                                 onerror="this.onerror=null;this.src='@fallback'" />
+                        </div>
+
+                        <div class="dl-body">
+                            <div class="dl-name">@d.FullName</div>
+                            <div class="dl-degree">@(string.IsNullOrWhiteSpace(d.Degree) ? "Bác sĩ" : d.Degree)</div>
+                            <div class="dl-specialty">@(string.IsNullOrWhiteSpace(d.Specialty) ? "Chưa cập nhật chuyên môn" : d.Specialty)</div>
+                            <div class="dl-sub">
+                                @(d.Department != null ? d.Department.DepartmentName : "Chưa cập nhật khoa")
+                            </div>
+
+                            <div class="dl-meta">
+                                <div class="dl-pill">
+                                    <div class="dl-pill-label">Giá khám</div>
+                                    <div class="dl-pill-value">@String.Format("{0:N0} đ", d.ConsultationFee)</div>
+                                </div>
+
+                                <div class="dl-pill">
+                                    <div class="dl-pill-label">Kinh nghiệm</div>
+                                    <div class="dl-pill-value">@((d.YearsOfExperience ?? 0)) năm</div>
+                                </div>
+                            </div>
+
+                            <div class="dl-schedule">
+                                <i class="fas fa-clock me-2"></i>
+                                @(string.IsNullOrWhiteSpace(d.WorkSchedule) ? "Chưa cập nhật lịch làm việc" : d.WorkSchedule)
+                            </div>
+
+                            <div class="d-flex gap-2">
+                                <a href="@Url.Action("DoctorDetail", "Home", new { id = d.Id })" class="btn btn-outline-primary flex-fill">
+                                    <i class="fas fa-eye me-1"></i>Xem chi tiết
+                                </a>
+                                <a href="@Url.Action("Create", "Booking", new { doctorId = d.Id })" class="btn btn-primary flex-fill">
+                                    <i class="fas fa-calendar-check me-1"></i>Đặt lịch
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</section>

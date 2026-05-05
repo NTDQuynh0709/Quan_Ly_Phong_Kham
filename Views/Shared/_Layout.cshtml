@@ -1,0 +1,12 @@
+﻿@{
+    var role = Session["UserRole"]?.ToString();
+    if (role != null)
+    {
+        Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    }
+    else
+    {
+        Layout = "~/Views/Shared/_PublicLayout.cshtml";
+    }
+}
+@RenderBody()

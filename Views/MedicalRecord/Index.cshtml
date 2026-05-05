@@ -1,0 +1,197 @@
+﻿@model IEnumerable<web.Models.Patient>
+
+@{
+    ViewBag.Title = "Hồ sơ bệnh án";
+    ViewBag.Ctrl = "MedicalRecord";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+
+    var recordCounts = ViewBag.RecordCounts as Dictionary<int, int>;
+    var lastVisits = ViewBag.LastVisits as Dictionary<int, DateTime>;
+}
+
+<style>
+    .mr-stat {
+        border-radius: 16px;
+        padding: 16px 18px;
+        color: #fff;
+        height: 100%;
+    }
+
+        .mr-stat .val {
+            font-size: 1.6rem;
+            font-weight: 800;
+            line-height: 1.1;
+        }
+
+        .mr-stat .lbl {
+            font-size: .84rem;
+            opacity: .9;
+            margin-top: 4px;
+        }
+
+    .mr-blue { background: linear-gradient(135deg, #2563eb, #3b82f6); }
+    .mr-indigo { background: linear-gradient(135deg, #4f46e5, #6366f1); }
+
+    .patient-name {
+        font-weight: 700;
+        color: #0f172a;
+    }
+
+    .patient-sub {
+        color: #64748b;
+        font-size: .84rem;
+        margin-top: 2px;
+    }
+
+    .count-pill {
+        display: inline-block;
+        background: #eff6ff;
+        color: #1d4ed8;
+        border: 1px solid #dbeafe;
+        border-radius: 999px;
+        padding: 6px 14px;
+        font-size: .82rem;
+        font-weight: 800;
+        white-space: nowrap;
+    }
+
+    /* Bảng hồ sơ bệnh án */
+    .mr-tbl thead th {
+        white-space: nowrap;
+        vertical-align: middle;
+    }
+
+    .mr-tbl tbody td {
+        vertical-align: middle;
+    }
+
+        /* Căn giữa: 2=CCCD, 3=SĐT, 4=Số lần khám, 5=Lần khám gần nhất, 6=Thao tác */
+        .mr-tbl thead th:nth-child(2),
+        .mr-tbl thead th:nth-child(3),
+        .mr-tbl thead th:nth-child(4),
+        .mr-tbl thead th:nth-child(5),
+        .mr-tbl thead th:nth-child(6),
+        .mr-tbl tbody td:nth-child(2),
+        .mr-tbl tbody td:nth-child(3),
+        .mr-tbl tbody td:nth-child(4),
+        .mr-tbl tbody td:nth-child(5),
+        .mr-tbl tbody td:nth-child(6) {
+            text-align: center;
+            white-space: nowrap;
+        }
+</style>
+
+<div class="pg-hd">
+    <h4><i class="fas fa-folder-open me-2"></i>Hồ sơ bệnh án</h4>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+        <div class="mr-stat mr-blue">
+            <div class="val">@ViewBag.TotalPatients</div>
+            <div class="lbl">Bệnh nhân có hồ sơ</div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="mr-stat mr-indigo">
+            <div class="val">@ViewBag.TotalRecords</div>
+            <div class="lbl">Lượt bệnh án (khớp lọc)</div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header"><i class="fas fa-filter me-2 text-primary"></i>Bộ lọc hồ sơ bệnh án</div>
+    <div class="card-body">
+        @using (Html.BeginForm("Index", "MedicalRecord", FormMethod.Get))
+        {
+            <div class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label">Từ khóa</label>
+                    <input type="text" name="q" value="@ViewBag.Query" class="form-control"
+                           placeholder="Tên, CCCD, SĐT, chẩn đoán..." />
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label">Từ ngày</label>
+                    <input type="date" name="fromDate" value="@ViewBag.FromDate" class="form-control" />
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label">Đến ngày</label>
+                    <input type="date" name="toDate" value="@ViewBag.ToDate" class="form-control" />
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label">Bác sĩ</label>
+                    @Html.DropDownList("doctorId", ViewBag.Doctors as SelectList, "Tất cả", new { @class = "form-select" })
+                </div>
+
+                <div class="col-md-2">
+                    <button class="btn btn-primary w-100">
+                        <i class="fas fa-search me-2"></i>Lọc
+                    </button>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="fas fa-list-ul me-2 text-primary"></i>Danh sách bệnh nhân có hồ sơ khám</span>
+        <span style="font-size:.82rem;color:#64748b">@Model.Count() bệnh nhân</span>
+    </div>
+    <div class="card-body p-0">
+        @if (!Model.Any())
+        {
+            <div class="empty-state">
+                <i class="fas fa-folder-open"></i>
+                <p>Không tìm thấy hồ sơ bệnh án phù hợp với bộ lọc.</p>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+            <table class="tbl mr-tbl">
+                <thead>
+                    <tr>
+                        <th>Bệnh nhân</th>
+                        <th>CCCD</th>
+                        <th>SĐT</th>
+                        <th>Số lần khám</th>
+                        <th>Lần khám gần nhất</th>
+                        <th style="width:180px">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        int count = recordCounts != null && recordCounts.ContainsKey(item.Id) ? recordCounts[item.Id] : 0;
+                        string lastVisit = lastVisits != null && lastVisits.ContainsKey(item.Id)
+                            ? lastVisits[item.Id].ToString("dd/MM/yyyy")
+                            : "—";
+
+                        <tr>
+                            <td>
+                                <div class="patient-name">@item.FullName</div>
+                                <div class="patient-sub">@(item.Gender ?? "—") · @(item.DateOfBirth.HasValue ? item.DateOfBirth.Value.ToString("dd/MM/yyyy") : "—")</div>
+                            </td>
+                            <td>@item.CCCD</td>
+                            <td>@item.Phone</td>
+                            <td><span class="count-pill">@count lần</span></td>
+                            <td>@lastVisit</td>
+                            <td>
+                                <a href="@Url.Action("PatientHistory", "MedicalRecord", new { patientId = item.Id })"
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-folder-open me-1"></i>Xem hồ sơ
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            </div>
+        }
+    </div>
+</div>

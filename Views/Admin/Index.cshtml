@@ -1,0 +1,275 @@
+﻿@{
+    ViewBag.Title = "Tổng quan hệ thống";
+    ViewBag.Ctrl = "Admin";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+
+    var todayAppointments = ViewBag.TodayAppointments as List<web.Models.Appointment>;
+    var newPatients = ViewBag.NewPatients as List<web.Models.Patient>;
+}
+
+<style>
+    .dash-stat {
+        border-radius: 18px;
+        padding: 18px 20px;
+        color: #fff;
+        height: 100%;
+        box-shadow: 0 10px 24px rgba(15,23,42,.08);
+    }
+
+        .dash-stat .value {
+            font-size: 1.75rem;
+            font-weight: 800;
+            line-height: 1.1;
+        }
+
+        .dash-stat .label {
+            font-size: .86rem;
+            opacity: .92;
+            margin-top: 4px;
+        }
+
+    .dash-blue {
+        background: linear-gradient(135deg, #2563eb, #3b82f6);
+    }
+
+    .dash-green {
+        background: linear-gradient(135deg, #16a34a, #22c55e);
+    }
+
+    .dash-yellow {
+        background: linear-gradient(135deg, #d97706, #f59e0b);
+    }
+
+    .dash-indigo {
+        background: linear-gradient(135deg, #4f46e5, #6366f1);
+    }
+
+    .dash-red {
+        background: linear-gradient(135deg, #dc2626, #ef4444);
+    }
+
+    .dash-sky {
+        background: linear-gradient(135deg, #0891b2, #06b6d4);
+    }
+
+    .summary-card {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 20px;
+        box-shadow: 0 10px 24px rgba(15,23,42,.06);
+        height: 100%;
+        padding: 20px;
+    }
+
+    .summary-title {
+        font-size: 1rem;
+        font-weight: 800;
+        color: #0f172a;
+        margin-bottom: 16px;
+    }
+
+    .mini-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 10px 0;
+        border-bottom: 1px solid #eef2f7;
+        font-size: .92rem;
+        color: #334155;
+    }
+
+        .mini-row:last-child {
+            border-bottom: none;
+        }
+
+    .table-mini td, .table-mini th {
+        padding: 12px 14px;
+        font-size: .9rem;
+    }
+
+    .patient-mini-name,
+    .appt-mini-name {
+        font-weight: 700;
+        color: #0f172a;
+    }
+
+    .patient-mini-sub,
+    .appt-mini-sub {
+        color: #64748b;
+        font-size: .82rem;
+        margin-top: 2px;
+    }
+</style>
+
+<div class="pg-hd">
+    <h4><i class="fas fa-chart-line me-2"></i>Tổng quan hệ thống phòng khám</h4>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+        <div class="dash-stat dash-blue">
+            <div class="value">@ViewBag.TotalDoctors</div>
+            <div class="label">Bác sĩ đang hoạt động</div>
+        </div>
+    </div>
+
+    <div class="col-6 col-lg-3">
+        <div class="dash-stat dash-green">
+            <div class="value">@ViewBag.TotalPatients</div>
+            <div class="label">Tổng bệnh nhân</div>
+        </div>
+    </div>
+
+    <div class="col-6 col-lg-3">
+        <div class="dash-stat dash-yellow">
+            <div class="value">@ViewBag.TotalAppointmentsToday</div>
+            <div class="label">Lịch khám hôm nay</div>
+        </div>
+    </div>
+
+    <div class="col-6 col-lg-3">
+        <div class="dash-stat dash-indigo">
+            <div class="value">@String.Format("{0:N0}", ViewBag.TodayRevenue)</div>
+            <div class="label">Doanh thu hôm nay (đ)</div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-6">
+        <div class="summary-card">
+            <div class="summary-title"><i class="fas fa-signal me-2 text-primary"></i>Tình trạng lịch hẹn</div>
+
+            <div class="mini-row">
+                <span>Chờ xác nhận</span>
+                <strong>@ViewBag.PendingAppointments</strong>
+            </div>
+            <div class="mini-row">
+                <span>Đã xác nhận</span>
+                <strong>@ViewBag.ConfirmedAppointments</strong>
+            </div>
+            <div class="mini-row">
+                <span>Hoàn thành</span>
+                <strong>@ViewBag.DoneAppointments</strong>
+            </div>
+            <div class="mini-row">
+                <span>Đã hủy</span>
+                <strong>@ViewBag.CancelledAppointments</strong>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="summary-card">
+            <div class="summary-title"><i class="fas fa-money-bill-wave me-2 text-primary"></i>Doanh thu</div>
+
+            <div class="mini-row">
+                <span>Doanh thu hôm nay</span>
+                <strong>@String.Format("{0:N0} đ", ViewBag.TodayRevenue)</strong>
+            </div>
+            <div class="mini-row">
+                <span>Doanh thu tháng này</span>
+                <strong>@String.Format("{0:N0} đ", ViewBag.MonthRevenue)</strong>
+            </div>
+            <div class="mini-row">
+                <span>Lịch đang chờ xử lý</span>
+                <strong>@ViewBag.PendingAppointments</strong>
+            </div>
+            <div class="mini-row">
+                <span>Lịch đã hoàn thành</span>
+                <strong>@ViewBag.DoneAppointments</strong>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-7">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-calendar-day me-2 text-primary"></i>Lịch khám hôm nay
+            </div>
+
+            <div class="card-body p-0">
+                @if (todayAppointments == null || !todayAppointments.Any())
+                {
+                    <div class="empty-state">
+                        <i class="fas fa-calendar-times"></i>
+                        <p>Hôm nay chưa có lịch khám nào.</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                    <table class="tbl table-mini">
+                        <thead>
+                            <tr>
+                                <th>Giờ</th>
+                                <th>Bệnh nhân</th>
+                                <th>Bác sĩ</th>
+                                <th>Trạng thái</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in todayAppointments)
+                            {
+                                string badgeCls = item.Status == "Confirmed" ? "bs-confirmed"
+                                                : item.Status == "Done" ? "bs-done"
+                                                : item.Status == "Cancelled" ? "bs-cancelled"
+                                                : "bs-pending";
+
+                                <tr>
+                                    <td>@item.TimeSlot</td>
+                                    <td>
+                                        <div class="appt-mini-name">@item.Patient.FullName</div>
+                                        <div class="appt-mini-sub">@item.Patient.Phone</div>
+                                    </td>
+                                    <td>
+                                        <div class="appt-mini-name">@item.Doctor.FullName</div>
+                                        <div class="appt-mini-sub">@item.Doctor.Specialty</div>
+                                    </td>
+                                    <td><span class="bs @badgeCls">@item.Status</span></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-user-plus me-2 text-primary"></i>Bệnh nhân mới thêm
+            </div>
+
+            <div class="card-body">
+                @if (newPatients == null || !newPatients.Any())
+                {
+                    <div class="empty-state">
+                        <i class="fas fa-user-slash"></i>
+                        <p>Chưa có dữ liệu bệnh nhân mới.</p>
+                    </div>
+                }
+                else
+                {
+                    foreach (var item in newPatients)
+                    {
+                        <div class="mini-row">
+                            <div>
+                                <div class="patient-mini-name">@item.FullName</div>
+                                <div class="patient-mini-sub">@item.Phone</div>
+                            </div>
+                            <div style="text-align:right">
+                                <div style="font-weight:700;color:#0f172a">@item.CCCD</div>
+                                <div class="patient-mini-sub">@item.CreatedAt.ToString("dd/MM/yyyy")</div>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,548 @@
+﻿@model IEnumerable<web.Models.MedicalRecord>
+
+@{
+    ViewBag.Title = "Lịch sử hồ sơ khám";
+    ViewBag.Ctrl = "MedicalRecord";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    var patient = ViewBag.Patient as web.Models.Patient;
+
+    var departmentList = ViewBag.DepartmentList as List<string>;
+    var doctorList = ViewBag.DoctorList as List<string>;
+    DateTime? firstVisit = ViewBag.FirstVisit as DateTime?;
+    DateTime? lastVisit = ViewBag.LastVisit as DateTime?;
+    int totalVisits = ViewBag.TotalVisits != null ? (int)ViewBag.TotalVisits : 0;
+    decimal totalFee = ViewBag.TotalFee != null ? (decimal)ViewBag.TotalFee : 0;
+
+    var logsByRecord = ViewBag.LogsByRecord as Dictionary<int, List<web.Models.MedicalRecordLog>>
+                       ?? new Dictionary<int, List<web.Models.MedicalRecordLog>>();
+}
+
+<style>
+    .patient-overview,
+    .history-card {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 20px;
+        box-shadow: 0 10px 24px rgba(15,23,42,.06);
+    }
+
+    .patient-overview {
+        padding: 22px;
+    }
+
+    .overview-name {
+        font-size: 1.3rem;
+        font-weight: 800;
+        color: #0f172a;
+        margin-bottom: 14px;
+    }
+
+    .overview-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px 18px;
+    }
+
+    .overview-item {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        padding: 12px 14px;
+    }
+
+    .overview-label {
+        font-size: .78rem;
+        color: #64748b;
+        font-weight: 700;
+        margin-bottom: 4px;
+    }
+
+    .overview-value {
+        font-size: .95rem;
+        color: #0f172a;
+        font-weight: 600;
+        line-height: 1.6;
+    }
+
+    .history-card {
+        padding: 18px;
+        margin-bottom: 16px;
+    }
+
+    .history-top {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 14px;
+        flex-wrap: wrap;
+    }
+
+    .history-title {
+        font-size: 1.02rem;
+        font-weight: 800;
+        color: #0f172a;
+        margin-bottom: 4px;
+    }
+
+    .history-sub {
+        color: #64748b;
+        font-size: .88rem;
+    }
+
+    .history-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+    }
+
+    .history-box {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        padding: 12px 14px;
+    }
+
+    .history-box-label {
+        font-size: .78rem;
+        color: #64748b;
+        font-weight: 700;
+        margin-bottom: 4px;
+    }
+
+    .history-box-value {
+        color: #0f172a;
+        line-height: 1.7;
+        white-space: pre-line;
+    }
+
+    .vital-strip {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 12px;
+    }
+
+    .vital-pill {
+        background: #eff6ff;
+        color: #1d4ed8;
+        border: 1px solid #bfdbfe;
+        border-radius: 999px;
+        padding: 6px 14px;
+        font-size: .85rem;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+        .vital-pill i {
+            color: #2563eb;
+        }
+
+        .vital-pill .vital-label {
+            color: #64748b;
+            font-weight: 600;
+        }
+
+    @@media (max-width: 768px) {
+        .overview-grid,
+        .history-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* ===== Audit timeline (nhật ký chỉnh sửa trong hồ sơ khám) ===== */
+    .audit-wrap {
+        margin-top: 14px;
+        border-top: 1px dashed #e2e8f0;
+        padding-top: 14px;
+    }
+
+    .audit-wrap summary {
+        cursor: pointer;
+        font-weight: 700;
+        color: #2563eb;
+        font-size: .88rem;
+        list-style: none;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 10px;
+        border-radius: 8px;
+        transition: background .15s;
+    }
+
+        .audit-wrap summary:hover {
+            background: #eff6ff;
+        }
+
+        .audit-wrap summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .audit-wrap summary::before {
+            content: "▶";
+            font-size: .7rem;
+            transition: transform .15s;
+        }
+
+    .audit-wrap[open] summary::before {
+        transform: rotate(90deg);
+    }
+
+    .audit-list {
+        margin-top: 14px;
+        display: grid;
+        gap: 10px;
+    }
+
+    .audit-item {
+        border-left: 3px solid #cbd5e1;
+        padding: 8px 14px;
+        background: #f8fafc;
+        border-radius: 0 10px 10px 0;
+        font-size: .86rem;
+    }
+
+        .audit-item.type-edit { border-left-color: #2563eb; }
+        .audit-item.type-lock { border-left-color: #dc2626; }
+        .audit-item.type-addendum { border-left-color: #d97706; background: #fffbeb; }
+
+    .audit-badge {
+        display: inline-block;
+        padding: 2px 9px;
+        border-radius: 999px;
+        font-size: .7rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: .04em;
+        margin-right: 8px;
+    }
+
+        .audit-badge.edit { background: #dbeafe; color: #1d4ed8; }
+        .audit-badge.lock { background: #fee2e2; color: #991b1b; }
+        .audit-badge.addendum { background: #fef3c7; color: #92400e; }
+
+    .audit-meta {
+        color: #64748b;
+        font-size: .8rem;
+    }
+
+    .audit-body {
+        margin-top: 6px;
+        color: #334155;
+        white-space: pre-line;
+        line-height: 1.7;
+    }
+
+    .audit-diff details summary {
+        font-size: .78rem;
+        color: #2563eb;
+        font-weight: 600;
+        padding: 4px 0;
+    }
+
+    .audit-diff pre {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        padding: 8px 10px;
+        font-size: .76rem;
+        max-height: 160px;
+        overflow: auto;
+        white-space: pre-wrap;
+        word-break: break-word;
+        margin: 4px 0;
+    }
+
+</style>
+
+<div class="pg-hd">
+    <h4><i class="fas fa-file-medical me-2"></i>Lịch sử hồ sơ khám</h4>
+    <a href="@Url.Action("Index", "MedicalRecord")" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Quay lại
+    </a>
+</div>
+
+@if (patient != null)
+{
+    <div class="patient-overview mb-4">
+        <div class="overview-name">@patient.FullName</div>
+
+        <div class="overview-grid">
+            <div class="overview-item">
+                <div class="overview-label">CCCD</div>
+                <div class="overview-value">@patient.CCCD</div>
+            </div>
+
+            <div class="overview-item">
+                <div class="overview-label">Số điện thoại</div>
+                <div class="overview-value">@patient.Phone</div>
+            </div>
+
+            <div class="overview-item">
+                <div class="overview-label">Giới tính</div>
+                <div class="overview-value">@(string.IsNullOrWhiteSpace(patient.Gender) ? "—" : patient.Gender)</div>
+            </div>
+
+            <div class="overview-item">
+                <div class="overview-label">Ngày sinh</div>
+                <div class="overview-value">@(patient.DateOfBirth.HasValue ? patient.DateOfBirth.Value.ToString("dd/MM/yyyy") : "—")</div>
+            </div>
+
+            <div class="overview-item">
+                <div class="overview-label">Email</div>
+                <div class="overview-value">@(string.IsNullOrWhiteSpace(patient.Email) ? "—" : patient.Email)</div>
+            </div>
+
+            <div class="overview-item">
+                <div class="overview-label">Địa chỉ</div>
+                <div class="overview-value">@(string.IsNullOrWhiteSpace(patient.Address) ? "—" : patient.Address)</div>
+            </div>
+        </div>
+    </div>
+}
+
+@if (totalVisits > 0)
+{
+    <div class="patient-overview mb-4" style="background:linear-gradient(135deg,#eff6ff,#dbeafe);border-color:#bfdbfe">
+        <div style="font-size:1rem;font-weight:800;color:#1d4ed8;margin-bottom:14px;">
+            <i class="fas fa-chart-simple me-2"></i>Tổng hợp khám bệnh
+        </div>
+
+        <div class="overview-grid">
+            <div class="overview-item" style="background:#fff">
+                <div class="overview-label">Tổng số lần khám</div>
+                <div class="overview-value" style="font-size:1.3rem;color:#1d4ed8">@totalVisits lần</div>
+            </div>
+
+            <div class="overview-item" style="background:#fff">
+                <div class="overview-label">Tổng chi phí đã khám</div>
+                <div class="overview-value" style="font-size:1.1rem">@String.Format("{0:N0} đ", totalFee)</div>
+            </div>
+
+            <div class="overview-item" style="background:#fff">
+                <div class="overview-label">Lần khám đầu</div>
+                <div class="overview-value">@(firstVisit.HasValue ? firstVisit.Value.ToString("dd/MM/yyyy") : "—")</div>
+            </div>
+
+            <div class="overview-item" style="background:#fff">
+                <div class="overview-label">Lần khám gần nhất</div>
+                <div class="overview-value">@(lastVisit.HasValue ? lastVisit.Value.ToString("dd/MM/yyyy") : "—")</div>
+            </div>
+
+            <div class="overview-item" style="background:#fff;grid-column:1 / -1">
+                <div class="overview-label">Chuyên khoa đã khám</div>
+                <div class="overview-value">
+                    @if (departmentList != null && departmentList.Any())
+                    {
+                        foreach (var d in departmentList)
+                        {
+                            <span class="bs bs-active me-1 mb-1" style="display:inline-block;white-space:nowrap">@d</span>
+                        }
+                    }
+                    else
+                    {
+                        <span>—</span>
+                    }
+                </div>
+            </div>
+
+            <div class="overview-item" style="background:#fff;grid-column:1 / -1">
+                <div class="overview-label">Bác sĩ đã khám</div>
+                <div class="overview-value">
+                    @if (doctorList != null && doctorList.Any())
+                    {
+                        foreach (var d in doctorList)
+                        {
+                            <span class="bs bs-done me-1 mb-1" style="display:inline-block;white-space:nowrap">BS. @d</span>
+                        }
+                    }
+                    else
+                    {
+                        <span>—</span>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@if (!Model.Any())
+{
+    <div class="empty-state">
+        <i class="fas fa-file-medical"></i>
+        <p>Bệnh nhân chưa có hồ sơ khám nào.</p>
+    </div>
+}
+else
+{
+    foreach (var item in Model)
+    {
+        <div class="history-card">
+            <div class="history-top">
+                <div>
+                    <div class="history-title">
+                        @item.Appointment.AppointmentDate.ToString("dd/MM/yyyy") - @item.Appointment.TimeSlot
+                    </div>
+                    <div class="history-sub">
+                        Bác sĩ: @item.Appointment.Doctor.FullName
+                        @if (item.Appointment.Doctor.Department != null)
+                        {
+                            <span> - @item.Appointment.Doctor.Department.DepartmentName</span>
+                        }
+                    </div>
+                </div>
+
+                <div>
+                    <span class="bs bs-active">Hoàn thành</span>
+                </div>
+            </div>
+
+            @{
+                bool hasVitals = !string.IsNullOrWhiteSpace(item.BloodPressure)
+                                 || item.HeartRate.HasValue
+                                 || item.Temperature.HasValue
+                                 || item.Height.HasValue
+                                 || item.Weight.HasValue;
+            }
+            @if (hasVitals)
+            {
+                <div class="vital-strip">
+                    @if (!string.IsNullOrWhiteSpace(item.BloodPressure))
+                    {
+                        <span class="vital-pill">
+                            <i class="fas fa-heart-pulse"></i>
+                            <span class="vital-label">HA:</span> @item.BloodPressure mmHg
+                        </span>
+                    }
+                    @if (item.HeartRate.HasValue)
+                    {
+                        <span class="vital-pill">
+                            <i class="fas fa-wave-square"></i>
+                            <span class="vital-label">Mạch:</span> @item.HeartRate lần/phút
+                        </span>
+                    }
+                    @if (item.Temperature.HasValue)
+                    {
+                        <span class="vital-pill">
+                            <i class="fas fa-temperature-half"></i>
+                            <span class="vital-label">Nhiệt độ:</span> @item.Temperature.Value.ToString("0.0") °C
+                        </span>
+                    }
+                    @if (item.Height.HasValue)
+                    {
+                        <span class="vital-pill">
+                            <i class="fas fa-ruler-vertical"></i>
+                            <span class="vital-label">Cao:</span> @item.Height.Value.ToString("0.#") cm
+                        </span>
+                    }
+                    @if (item.Weight.HasValue)
+                    {
+                        <span class="vital-pill">
+                            <i class="fas fa-weight-scale"></i>
+                            <span class="vital-label">Nặng:</span> @item.Weight.Value.ToString("0.#") kg
+                        </span>
+                    }
+                </div>
+            }
+
+            <div class="history-grid">
+                <div class="history-box">
+                    <div class="history-box-label">Triệu chứng</div>
+                    <div class="history-box-value">@(string.IsNullOrWhiteSpace(item.Symptoms) ? "—" : item.Symptoms)</div>
+                </div>
+
+                <div class="history-box">
+                    <div class="history-box-label">Chẩn đoán</div>
+                    <div class="history-box-value">@(string.IsNullOrWhiteSpace(item.Diagnosis) ? "—" : item.Diagnosis)</div>
+                </div>
+
+                <div class="history-box">
+                    <div class="history-box-label">Hướng điều trị</div>
+                    <div class="history-box-value">@(string.IsNullOrWhiteSpace(item.Treatment) ? "—" : item.Treatment)</div>
+                </div>
+
+                <div class="history-box">
+                    <div class="history-box-label">Đơn thuốc</div>
+                    <div class="history-box-value">@(string.IsNullOrWhiteSpace(item.Prescription) ? "—" : item.Prescription)</div>
+                </div>
+
+                <div class="history-box" style="grid-column:1 / -1;">
+                    <div class="history-box-label">Ghi chú thêm</div>
+                    <div class="history-box-value">@(string.IsNullOrWhiteSpace(item.Note) ? "—" : item.Note)</div>
+                </div>
+            </div>
+
+            @* ========== Audit timeline — collapsible, chỉ hiện khi Admin click ========== *@
+            @{
+                List<web.Models.MedicalRecordLog> recordLogs = logsByRecord.ContainsKey(item.Id)
+                    ? logsByRecord[item.Id] : new List<web.Models.MedicalRecordLog>();
+            }
+            @if (recordLogs.Any())
+            {
+                <details class="audit-wrap">
+                    <summary>
+                        <i class="fas fa-clock-rotate-left"></i>
+                        Nhật ký chỉnh sửa &amp; phụ lục (@recordLogs.Count)
+                    </summary>
+                    <div class="audit-list">
+                        @foreach (var log in recordLogs)
+                        {
+                            string typeClass = log.LogType == "Edit" ? "type-edit"
+                                            : log.LogType == "Lock" ? "type-lock"
+                                            : "type-addendum";
+                            string badgeClass = log.LogType == "Edit" ? "edit"
+                                             : log.LogType == "Lock" ? "lock"
+                                             : "addendum";
+                            string badgeText = log.LogType == "Edit" ? "Sửa"
+                                            : log.LogType == "Lock" ? "Chốt"
+                                            : "Phụ lục";
+
+                            <div class="audit-item @typeClass">
+                                <div>
+                                    <span class="audit-badge @badgeClass">@badgeText</span>
+                                    <span class="audit-meta">
+                                        <i class="fas fa-user-doctor me-1"></i>@log.CreatedByName
+                                        &nbsp;·&nbsp;
+                                        <i class="fas fa-clock me-1"></i>@log.CreatedAt.ToString("HH:mm dd/MM/yyyy")
+                                    </span>
+                                </div>
+
+                                @if (log.LogType == "Addendum")
+                                {
+                                    <div class="audit-body">
+                                        <strong>Lý do:</strong> @(string.IsNullOrWhiteSpace(log.Reason) ? "—" : log.Reason)
+                                    </div>
+                                    <div class="audit-body" style="background:#fff;border:1px solid #fde68a;border-radius:8px;padding:8px 12px;margin-top:6px">
+                                        @log.AddendumText
+                                    </div>
+                                }
+                                else if (log.LogType == "Lock")
+                                {
+                                    <div class="audit-body" style="color:#64748b;font-style:italic">
+                                        <i class="fas fa-shield-halved me-1"></i>Bệnh án đã chốt - không sửa đè nội dung sau thời điểm này (theo Thông tư 46/2018/TT-BYT).
+                                    </div>
+                                }
+                                else if (log.LogType == "Edit")
+                                {
+                                    <div class="audit-diff" style="margin-top:4px">
+                                        <details>
+                                            <summary>Xem chi tiết thay đổi</summary>
+                                            <div style="margin-top:6px;font-size:.78rem;color:#475569">
+                                                <div style="color:#991b1b;font-weight:700;margin-top:4px">Trước khi sửa:</div>
+                                                <pre>@log.OldContent</pre>
+                                                <div style="color:#166534;font-weight:700;margin-top:4px">Sau khi sửa:</div>
+                                                <pre>@log.NewContent</pre>
+                                            </div>
+                                        </details>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                </details>
+            }
+        </div>
+    }
+}

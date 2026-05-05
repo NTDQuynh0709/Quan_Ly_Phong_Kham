@@ -1,0 +1,198 @@
+﻿@model IEnumerable<web.Models.Receptionist>
+
+@{
+    ViewBag.Title = "Quản lý lễ tân";
+    ViewBag.Ctrl = "Receptionist";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<style>
+    .rc-stat {
+        border-radius: 16px;
+        padding: 16px 18px;
+        color: #fff;
+        height: 100%;
+    }
+
+        .rc-stat .val {
+            font-size: 1.6rem;
+            font-weight: 800;
+            line-height: 1.1;
+        }
+
+        .rc-stat .lbl {
+            font-size: .84rem;
+            opacity: .9;
+            margin-top: 4px;
+        }
+
+    .rc-blue {
+        background: linear-gradient(135deg, #2563eb, #3b82f6);
+    }
+
+    .rc-green {
+        background: linear-gradient(135deg, #16a34a, #22c55e);
+    }
+
+    .rc-slate {
+        background: linear-gradient(135deg, #475569, #64748b);
+    }
+
+    .receptionist-name {
+        font-weight: 700;
+        color: #0f172a;
+    }
+
+    .receptionist-sub {
+        color: #64748b;
+        font-size: .84rem;
+        margin-top: 2px;
+    }
+
+    /* Bảng lễ tân — không xuống dòng header/badge + căn giữa các cột ngắn */
+    .receptionist-tbl thead th {
+        white-space: nowrap;
+        vertical-align: middle;
+    }
+
+    .receptionist-tbl tbody td {
+        vertical-align: middle;
+    }
+
+        /* Căn giữa: 2=Điện thoại, 4=Giới tính, 5=Trạng thái, 6=Thao tác */
+        .receptionist-tbl thead th:nth-child(2),
+        .receptionist-tbl thead th:nth-child(4),
+        .receptionist-tbl thead th:nth-child(5),
+        .receptionist-tbl thead th:nth-child(6),
+        .receptionist-tbl tbody td:nth-child(2),
+        .receptionist-tbl tbody td:nth-child(4),
+        .receptionist-tbl tbody td:nth-child(5),
+        .receptionist-tbl tbody td:nth-child(6) {
+            text-align: center;
+        }
+
+    .receptionist-tbl .bs {
+        white-space: nowrap;
+    }
+</style>
+
+<div class="pg-hd">
+    <h4><i class="fas fa-concierge-bell me-2"></i>Quản lý lễ tân</h4>
+    <a href="@Url.Action("Create", "Receptionist")" class="btn btn-primary">
+        <i class="fas fa-plus me-2"></i>Thêm lễ tân
+    </a>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success"><i class="fas fa-check-circle me-2"></i>@TempData["Success"]</div>
+}
+
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+        <div class="rc-stat rc-blue">
+            <div class="val">@ViewBag.TotalCount</div>
+            <div class="lbl">Tổng lễ tân</div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="rc-stat rc-green">
+            <div class="val">@ViewBag.ActiveCount</div>
+            <div class="lbl">Đang hoạt động</div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="rc-stat rc-slate">
+            <div class="val">@ViewBag.InactiveCount</div>
+            <div class="lbl">Ngưng hoạt động</div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header"><i class="fas fa-search me-2 text-primary"></i>Tìm kiếm lễ tân</div>
+    <div class="card-body">
+        @using (Html.BeginForm("Index", "Receptionist", FormMethod.Get))
+        {
+            <div class="row g-3 align-items-end">
+                <div class="col-md-10">
+                    <label class="form-label">Từ khóa</label>
+                    <input type="text"
+                           name="q"
+                           value="@ViewBag.Query"
+                           class="form-control"
+                           placeholder="Nhập họ tên, số điện thoại hoặc email..." />
+                </div>
+
+                <div class="col-md-2">
+                    <button class="btn btn-primary w-100">
+                        <i class="fas fa-search me-2"></i>Tìm
+                    </button>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="fas fa-list-ul me-2 text-primary"></i>Danh sách lễ tân</span>
+        <span style="font-size:.82rem;color:#64748b">@Model.Count() lễ tân</span>
+    </div>
+    <div class="card-body p-0">
+        @if (!Model.Any())
+        {
+            <div class="empty-state">
+                <i class="fas fa-user-group"></i>
+                <p>Không có lễ tân nào phù hợp.</p>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+            <table class="tbl receptionist-tbl">
+                <thead>
+                    <tr>
+                        <th>Họ tên</th>
+                        <th>Điện thoại</th>
+                        <th>Email</th>
+                        <th>Giới tính</th>
+                        <th>Trạng thái</th>
+                        <th style="width:120px">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var r in Model)
+                    {
+                        <tr>
+                            <td>
+                                <div class="receptionist-name">@r.FullName</div>
+                                <div class="receptionist-sub">@(r.Address ?? "—")</div>
+                            </td>
+                            <td>@(string.IsNullOrWhiteSpace(r.Phone) ? "—" : r.Phone)</td>
+                            <td>@(string.IsNullOrWhiteSpace(r.Email) ? "—" : r.Email)</td>
+                            <td>@(string.IsNullOrWhiteSpace(r.Gender) ? "—" : r.Gender)</td>
+                            <td>
+                                @if (r.IsActive)
+                                {
+                                    <span class="bs bs-active">Đang hoạt động</span>
+                                }
+                                else
+                                {
+                                    <span class="bs bs-inactive">Ngưng hoạt động</span>
+                                }
+                            </td>
+                            <td>
+                                <a href="@Url.Action("Edit", "Receptionist", new { id = r.Id })"
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-pen me-1"></i>Sửa
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            </div>
+        }
+    </div>
+</div>

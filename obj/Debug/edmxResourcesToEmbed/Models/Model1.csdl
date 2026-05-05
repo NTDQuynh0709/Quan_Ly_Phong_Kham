@@ -1,0 +1,319 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Schema Namespace="ClinicDbModel" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
+  <EntityType Name="Appointment">
+    <Key>
+      <PropertyRef Name="Id" />
+    </Key>
+    <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+    <Property Name="PatientId" Type="Int32" Nullable="false" />
+    <Property Name="DoctorId" Type="Int32" Nullable="false" />
+    <Property Name="AppointmentDate" Type="DateTime" Nullable="false" Precision="0" />
+    <Property Name="TimeSlot" Type="String" MaxLength="10" FixedLength="false" Unicode="true" Nullable="false" />
+    <Property Name="Status" Type="String" MaxLength="20" FixedLength="false" Unicode="true" Nullable="false" />
+    <Property Name="Note" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
+    <Property Name="CreatedAt" Type="DateTime" Nullable="false" Precision="3" />
+    <NavigationProperty Name="Doctor" Relationship="Self.FK_Appointments_Doctors" FromRole="Appointments" ToRole="Doctors" />
+    <NavigationProperty Name="Patient" Relationship="Self.FK_Appointments_Patients" FromRole="Appointments" ToRole="Patients" />
+    <NavigationProperty Name="MedicalRecords" Relationship="Self.FK_MedicalRecords_Appointments" FromRole="Appointments" ToRole="MedicalRecords" />
+    <Property Name="ServiceFee" Type="Decimal" Nullable="false" Precision="18" Scale="0" />
+    <Property Name="DiscountAmount" Type="Decimal" Nullable="false" Precision="18" Scale="0" />
+    <Property Name="TotalFee" Type="Decimal" Nullable="false" Precision="18" Scale="0" />
+  </EntityType>
+  <EntityType Name="Doctor">
+    <Key>
+      <PropertyRef Name="Id" />
+    </Key>
+    <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+    <Property Name="UserId" Type="Int32" />
+    <Property Name="FullName" Type="String" MaxLength="100" FixedLength="false" Unicode="true" Nullable="false" />
+    <Property Name="Specialty" Type="String" MaxLength="150" FixedLength="false" Unicode="true" Nullable="false" />
+    <Property Name="DepartmentId" Type="Int32" />
+    <Property Name="Phone" Type="String" MaxLength="20" FixedLength="false" Unicode="true" />
+    <Property Name="Email" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+    <Property Name="Gender" Type="String" MaxLength="10" FixedLength="false" Unicode="true" />
+    <Property Name="DateOfBirth" Type="DateTime" Precision="0" />
+    <Property Name="Address" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+    <Property Name="IsActive" Type="Boolean" Nullable="false" />
+    <Property Name="CreatedAt" Type="DateTime" Nullable="false" Precision="3" />
+    <NavigationProperty Name="Appointments" Relationship="Self.FK_Appointments_Doctors" FromRole="Doctors" ToRole="Appointments" />
+    <NavigationProperty Name="User" Relationship="Self.FK_Doctors_Users" FromRole="Doctors" ToRole="Users" />
+    <Property Name="Degree" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+    <Property Name="YearsOfExperience" Type="Int32" />
+    <Property Name="ConsultationFee" Type="Decimal" Nullable="false" Precision="18" Scale="0" />
+    <Property Name="Biography" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+    <Property Name="ImageUrl" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+    <Property Name="WorkSchedule" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+    <NavigationProperty Name="Department" Relationship="ClinicDbModel.FK_Doctors_Departments" FromRole="Doctor" ToRole="Department" />
+  </EntityType>
+  <EntityType Name="MedicalRecord">
+    <Key>
+      <PropertyRef Name="Id" />
+    </Key>
+    <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+    <Property Name="AppointmentId" Type="Int32" Nullable="false" />
+    <Property Name="Symptoms" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+    <Property Name="Diagnosis" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+    <Property Name="Treatment" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+    <Property Name="Prescription" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+    <Property Name="Note" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+    <Property Name="CreatedAt" Type="DateTime" Nullable="false" Precision="3" />
+    <NavigationProperty Name="Appointment" Relationship="Self.FK_MedicalRecords_Appointments" FromRole="MedicalRecords" ToRole="Appointments" />
+    <Property Name="BloodPressure" Type="String" MaxLength="20" FixedLength="false" Unicode="true" />
+    <Property Name="HeartRate" Type="Int32" />
+    <Property Name="Temperature" Type="Decimal" Precision="4" Scale="1" />
+    <Property Name="Height" Type="Decimal" Precision="5" Scale="1" />
+    <Property Name="Weight" Type="Decimal" Precision="5" Scale="1" />
+    <Property Name="IsLocked" Type="Boolean" Nullable="false" />
+    <Property Name="LockedAt" Type="DateTime" Precision="3" />
+    <Property Name="LockedByUserId" Type="Int32" />
+    <Property Name="LastModifiedAt" Type="DateTime" Precision="3" />
+    <Property Name="LastModifiedByUserId" Type="Int32" />
+    <NavigationProperty Name="MedicalRecordLogs" Relationship="ClinicDbModel.FK_MedicalRecordLogs_Record" FromRole="MedicalRecord" ToRole="MedicalRecordLog" />
+    <NavigationProperty Name="User" Relationship="ClinicDbModel.FK_MedicalRecords_LastModifiedBy" FromRole="MedicalRecord" ToRole="User" />
+    <NavigationProperty Name="User1" Relationship="ClinicDbModel.FK_MedicalRecords_LockedBy" FromRole="MedicalRecord" ToRole="User" />
+  </EntityType>
+  <EntityType Name="Patient">
+    <Key>
+      <PropertyRef Name="Id" />
+    </Key>
+    <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+    <Property Name="FullName" Type="String" MaxLength="100" FixedLength="false" Unicode="true" Nullable="false" />
+    <Property Name="DateOfBirth" Type="DateTime" Precision="0" />
+    <Property Name="Gender" Type="String" MaxLength="10" FixedLength="false" Unicode="true" />
+    <Property Name="CCCD" Type="String" MaxLength="20" FixedLength="false" Unicode="true" Nullable="false" />
+    <Property Name="Phone" Type="String" MaxLength="20" FixedLength="false" Unicode="true" Nullable="false" />
+    <Property Name="Email" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+    <Property Name="Address" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+    <Property Name="CreatedAt" Type="DateTime" Nullable="false" Precision="3" />
+    <NavigationProperty Name="Appointments" Relationship="Self.FK_Appointments_Patients" FromRole="Patients" ToRole="Appointments" />
+  </EntityType>
+  <EntityType Name="Receptionist">
+    <Key>
+      <PropertyRef Name="Id" />
+    </Key>
+    <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+    <Property Name="UserId" Type="Int32" />
+    <Property Name="FullName" Type="String" MaxLength="100" FixedLength="false" Unicode="true" Nullable="false" />
+    <Property Name="Phone" Type="String" MaxLength="20" FixedLength="false" Unicode="true" />
+    <Property Name="Email" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+    <Property Name="Gender" Type="String" MaxLength="10" FixedLength="false" Unicode="true" />
+    <Property Name="DateOfBirth" Type="DateTime" Precision="0" />
+    <Property Name="Address" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+    <Property Name="IsActive" Type="Boolean" Nullable="false" />
+    <Property Name="CreatedAt" Type="DateTime" Nullable="false" Precision="3" />
+    <NavigationProperty Name="User" Relationship="Self.FK_Receptionists_Users" FromRole="Receptionists" ToRole="Users" />
+  </EntityType>
+  <EntityType Name="User">
+    <Key>
+      <PropertyRef Name="Id" />
+    </Key>
+    <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+    <Property Name="Username" Type="String" MaxLength="50" FixedLength="false" Unicode="true" Nullable="false" />
+    <Property Name="PasswordHash" Type="String" MaxLength="255" FixedLength="false" Unicode="true" Nullable="false" />
+    <Property Name="FullName" Type="String" MaxLength="100" FixedLength="false" Unicode="true" Nullable="false" />
+    <Property Name="Role" Type="String" MaxLength="20" FixedLength="false" Unicode="true" Nullable="false" />
+    <Property Name="IsActive" Type="Boolean" Nullable="false" />
+    <Property Name="CreatedAt" Type="DateTime" Nullable="false" Precision="3" />
+    <NavigationProperty Name="Doctors" Relationship="Self.FK_Doctors_Users" FromRole="Users" ToRole="Doctors" />
+    <NavigationProperty Name="Receptionists" Relationship="Self.FK_Receptionists_Users" FromRole="Users" ToRole="Receptionists" />
+    <NavigationProperty Name="MedicalRecordLogs" Relationship="ClinicDbModel.FK_MedicalRecordLogs_User" FromRole="User" ToRole="MedicalRecordLog" />
+    <NavigationProperty Name="MedicalRecords" Relationship="ClinicDbModel.FK_MedicalRecords_LastModifiedBy" FromRole="User" ToRole="MedicalRecord" />
+    <NavigationProperty Name="MedicalRecords1" Relationship="ClinicDbModel.FK_MedicalRecords_LockedBy" FromRole="User" ToRole="MedicalRecord" />
+  </EntityType>
+  <Association Name="FK_Appointments_Doctors">
+    <End Role="Doctors" Type="Self.Doctor" Multiplicity="1" />
+    <End Role="Appointments" Type="Self.Appointment" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="Doctors">
+        <PropertyRef Name="Id" />
+      </Principal>
+      <Dependent Role="Appointments">
+        <PropertyRef Name="DoctorId" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK_Appointments_Patients">
+    <End Role="Patients" Type="Self.Patient" Multiplicity="1" />
+    <End Role="Appointments" Type="Self.Appointment" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="Patients">
+        <PropertyRef Name="Id" />
+      </Principal>
+      <Dependent Role="Appointments">
+        <PropertyRef Name="PatientId" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK_MedicalRecords_Appointments">
+    <End Role="Appointments" Type="Self.Appointment" Multiplicity="1" />
+    <End Role="MedicalRecords" Type="Self.MedicalRecord" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="Appointments">
+        <PropertyRef Name="Id" />
+      </Principal>
+      <Dependent Role="MedicalRecords">
+        <PropertyRef Name="AppointmentId" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK_Doctors_Users">
+    <End Role="Users" Type="Self.User" Multiplicity="0..1" />
+    <End Role="Doctors" Type="Self.Doctor" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="Users">
+        <PropertyRef Name="Id" />
+      </Principal>
+      <Dependent Role="Doctors">
+        <PropertyRef Name="UserId" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK_Receptionists_Users">
+    <End Role="Users" Type="Self.User" Multiplicity="0..1" />
+    <End Role="Receptionists" Type="Self.Receptionist" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="Users">
+        <PropertyRef Name="Id" />
+      </Principal>
+      <Dependent Role="Receptionists">
+        <PropertyRef Name="UserId" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <EntityContainer Name="ClinicDbEntities1" annotation:LazyLoadingEnabled="true">
+    <EntitySet Name="Appointments" EntityType="Self.Appointment" />
+    <EntitySet Name="Doctors" EntityType="Self.Doctor" />
+    <EntitySet Name="MedicalRecords" EntityType="Self.MedicalRecord" />
+    <EntitySet Name="Patients" EntityType="Self.Patient" />
+    <EntitySet Name="Receptionists" EntityType="Self.Receptionist" />
+    <EntitySet Name="Users" EntityType="Self.User" />
+    <AssociationSet Name="FK_Appointments_Doctors" Association="Self.FK_Appointments_Doctors">
+      <End Role="Doctors" EntitySet="Doctors" />
+      <End Role="Appointments" EntitySet="Appointments" />
+    </AssociationSet>
+    <AssociationSet Name="FK_Appointments_Patients" Association="Self.FK_Appointments_Patients">
+      <End Role="Patients" EntitySet="Patients" />
+      <End Role="Appointments" EntitySet="Appointments" />
+    </AssociationSet>
+    <AssociationSet Name="FK_MedicalRecords_Appointments" Association="Self.FK_MedicalRecords_Appointments">
+      <End Role="Appointments" EntitySet="Appointments" />
+      <End Role="MedicalRecords" EntitySet="MedicalRecords" />
+    </AssociationSet>
+    <AssociationSet Name="FK_Doctors_Users" Association="Self.FK_Doctors_Users">
+      <End Role="Users" EntitySet="Users" />
+      <End Role="Doctors" EntitySet="Doctors" />
+    </AssociationSet>
+    <AssociationSet Name="FK_Receptionists_Users" Association="Self.FK_Receptionists_Users">
+      <End Role="Users" EntitySet="Users" />
+      <End Role="Receptionists" EntitySet="Receptionists" />
+    </AssociationSet>
+    <EntitySet Name="Departments" EntityType="ClinicDbModel.Department" />
+    <AssociationSet Name="FK_Doctors_Departments" Association="ClinicDbModel.FK_Doctors_Departments">
+      <End Role="Department" EntitySet="Departments" />
+      <End Role="Doctor" EntitySet="Doctors" />
+    </AssociationSet>
+    <EntitySet Name="MedicalRecordLogs" EntityType="ClinicDbModel.MedicalRecordLog" />
+    <AssociationSet Name="FK_MedicalRecordLogs_Record" Association="ClinicDbModel.FK_MedicalRecordLogs_Record">
+      <End Role="MedicalRecord" EntitySet="MedicalRecords" />
+      <End Role="MedicalRecordLog" EntitySet="MedicalRecordLogs" />
+    </AssociationSet>
+    <AssociationSet Name="FK_MedicalRecordLogs_User" Association="ClinicDbModel.FK_MedicalRecordLogs_User">
+      <End Role="User" EntitySet="Users" />
+      <End Role="MedicalRecordLog" EntitySet="MedicalRecordLogs" />
+    </AssociationSet>
+    <AssociationSet Name="FK_MedicalRecords_LastModifiedBy" Association="ClinicDbModel.FK_MedicalRecords_LastModifiedBy">
+      <End Role="User" EntitySet="Users" />
+      <End Role="MedicalRecord" EntitySet="MedicalRecords" />
+    </AssociationSet>
+    <AssociationSet Name="FK_MedicalRecords_LockedBy" Association="ClinicDbModel.FK_MedicalRecords_LockedBy">
+      <End Role="User" EntitySet="Users" />
+      <End Role="MedicalRecord" EntitySet="MedicalRecords" />
+    </AssociationSet>
+  </EntityContainer>
+  <EntityType Name="Department">
+    <Key>
+      <PropertyRef Name="Id" />
+    </Key>
+    <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+    <Property Name="DepartmentName" Type="String" Nullable="false" MaxLength="100" FixedLength="false" Unicode="true" />
+    <Property Name="Description" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
+    <NavigationProperty Name="Doctors" Relationship="ClinicDbModel.FK_Doctors_Departments" FromRole="Department" ToRole="Doctor" />
+  </EntityType>
+  <Association Name="FK_Doctors_Departments">
+    <End Type="ClinicDbModel.Department" Role="Department" Multiplicity="0..1" />
+    <End Type="ClinicDbModel.Doctor" Role="Doctor" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="Department">
+        <PropertyRef Name="Id" />
+      </Principal>
+      <Dependent Role="Doctor">
+        <PropertyRef Name="DepartmentId" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <EntityType Name="MedicalRecordLog">
+    <Key>
+      <PropertyRef Name="Id" />
+    </Key>
+    <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+    <Property Name="MedicalRecordId" Type="Int32" Nullable="false" />
+    <Property Name="LogType" Type="String" Nullable="false" MaxLength="20" FixedLength="false" Unicode="true" />
+    <Property Name="OldContent" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+    <Property Name="NewContent" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+    <Property Name="AddendumText" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+    <Property Name="Reason" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
+    <Property Name="CreatedByUserId" Type="Int32" Nullable="false" />
+    <Property Name="CreatedByName" Type="String" Nullable="false" MaxLength="100" FixedLength="false" Unicode="true" />
+    <Property Name="CreatedAt" Type="DateTime" Nullable="false" Precision="3" />
+    <NavigationProperty Name="MedicalRecord" Relationship="ClinicDbModel.FK_MedicalRecordLogs_Record" FromRole="MedicalRecordLog" ToRole="MedicalRecord" />
+    <NavigationProperty Name="User" Relationship="ClinicDbModel.FK_MedicalRecordLogs_User" FromRole="MedicalRecordLog" ToRole="User" />
+  </EntityType>
+  <Association Name="FK_MedicalRecordLogs_Record">
+    <End Type="ClinicDbModel.MedicalRecord" Role="MedicalRecord" Multiplicity="1" />
+    <End Type="ClinicDbModel.MedicalRecordLog" Role="MedicalRecordLog" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="MedicalRecord">
+        <PropertyRef Name="Id" />
+      </Principal>
+      <Dependent Role="MedicalRecordLog">
+        <PropertyRef Name="MedicalRecordId" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK_MedicalRecordLogs_User">
+    <End Type="ClinicDbModel.User" Role="User" Multiplicity="1" />
+    <End Type="ClinicDbModel.MedicalRecordLog" Role="MedicalRecordLog" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="User">
+        <PropertyRef Name="Id" />
+      </Principal>
+      <Dependent Role="MedicalRecordLog">
+        <PropertyRef Name="CreatedByUserId" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK_MedicalRecords_LastModifiedBy">
+    <End Type="ClinicDbModel.User" Role="User" Multiplicity="0..1" />
+    <End Type="ClinicDbModel.MedicalRecord" Role="MedicalRecord" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="User">
+        <PropertyRef Name="Id" />
+      </Principal>
+      <Dependent Role="MedicalRecord">
+        <PropertyRef Name="LastModifiedByUserId" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK_MedicalRecords_LockedBy">
+    <End Type="ClinicDbModel.User" Role="User" Multiplicity="0..1" />
+    <End Type="ClinicDbModel.MedicalRecord" Role="MedicalRecord" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="User">
+        <PropertyRef Name="Id" />
+      </Principal>
+      <Dependent Role="MedicalRecord">
+        <PropertyRef Name="LockedByUserId" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+</Schema>

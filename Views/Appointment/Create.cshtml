@@ -1,0 +1,269 @@
+﻿@{
+    ViewBag.Title = "Tạo lịch khám";
+    ViewBag.Ctrl = "Appointment";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+
+    string apptDate = "";
+    if (ViewBag.AppointmentDate != null)
+    {
+        DateTime temp;
+        if (DateTime.TryParse(ViewBag.AppointmentDate.ToString(), out temp))
+        {
+            apptDate = temp.ToString("yyyy-MM-dd");
+        }
+    }
+}
+
+<div class="pg-hd">
+    <h4><i class="fas fa-calendar-plus me-2"></i>Tạo lịch khám</h4>
+</div>
+
+<div class="card">
+    <div class="card-header"><i class="fas fa-notes-medical me-2 text-primary"></i>Thông tin lịch khám</div>
+    <div class="card-body">
+        @{
+            var allErrors = ViewData.ModelState
+                .Where(kv => kv.Value.Errors.Count > 0)
+                .SelectMany(kv => kv.Value.Errors.Select(e => e.ErrorMessage))
+                .Where(m => !string.IsNullOrWhiteSpace(m))
+                .Distinct()
+                .ToList();
+        }
+        @if (allErrors.Count > 0)
+        {
+            <div class="alert alert-danger mb-3" style="border-radius:12px">
+                <div style="font-weight:800;margin-bottom:6px">
+                    <i class="fas fa-circle-exclamation me-2"></i>Vui lòng kiểm tra lại các thông tin sau:
+                </div>
+                <ul style="margin:0;padding-left:22px">
+                    @foreach (var msg in allErrors)
+                    {
+                        <li>@msg</li>
+                    }
+                </ul>
+            </div>
+        }
+
+        @using (Html.BeginForm("Create", "Appointment", FormMethod.Post, new { novalidate = "novalidate" }))
+        {
+            @Html.AntiForgeryToken()
+
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="mb-3">
+                        <label class="form-label">Bệnh nhân <span style="color:red">*</span></label>
+                        <div class="position-relative">
+                            <input type="text"
+                                   name="patientKeyword"
+                                   id="patientSearch"
+                                   value="@ViewBag.PatientKeyword"
+                                   class="form-control"
+                                   placeholder="Gõ tên, CCCD hoặc SĐT để tìm bệnh nhân..."
+                                   autocomplete="off"
+                                   required
+                                   maxlength="100" />
+                            <div id="patientSuggest" class="list-group position-absolute w-100 shadow"
+                                 style="z-index:10;max-height:280px;overflow-y:auto;display:none;top:100%"></div>
+                        </div>
+                        <div id="patientSelected" style="display:none;margin-top:8px;padding:10px 14px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px">
+                            <div style="font-weight:700;color:#0f172a" id="patientSelectedName"></div>
+                            <div style="font-size:.82rem;color:#64748b;margin-top:2px" id="patientSelectedMeta"></div>
+                        </div>
+                        <div class="form-text" style="font-size:.78rem;color:#64748b;margin-top:4px">
+                            <i class="fas fa-lightbulb me-1 text-warning"></i>
+                            Gõ tối thiểu 2 ký tự. Hệ thống gợi ý từ danh sách bệnh nhân đã có trong hệ thống.
+                        </div>
+                        @Html.ValidationMessage("patientKeyword", "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Khoa</label>
+                        @Html.DropDownList("departmentId", ViewBag.Departments as SelectList, "Chọn khoa", new { @class = "form-select", id = "departmentId" })
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Bác sĩ</label>
+                        @Html.DropDownList("doctorId", ViewBag.Doctors as SelectList, "Chọn bác sĩ", new { @class = "form-select", id = "doctorId" })
+                        @Html.ValidationMessage("doctorId", "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Ngày khám</label>
+                        <input type="date"
+                               name="appointmentDate"
+                               value="@apptDate"
+                               class="form-control"
+                               min="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                        @Html.ValidationMessage("appointmentDate", "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Giờ khám</label>
+                        @Html.DropDownList("timeSlot", ViewBag.TimeSlots as SelectList, "Chọn giờ khám", new { @class = "form-select" })
+                        @Html.ValidationMessage("timeSlot", "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Trạng thái</label>
+                        <input type="text" class="form-control" value="Đã xác nhận" readonly />
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <div class="mb-3">
+                        <label class="form-label">Ghi chú</label>
+                        <textarea name="note" class="form-control" rows="4" placeholder="Nhập ghi chú khám bệnh...">@ViewBag.Note</textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex flex-wrap gap-3 mt-3">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save me-2"></i>Lưu lịch khám
+                </button>
+
+                <a href="@Url.Action("Index", "Appointment")" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Quay lại
+                </a>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+    (function () {
+        // Dữ liệu bệnh nhân preload từ server (an toàn vì tất cả là staff đã đăng nhập)
+        var patients = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.PatientsForLookup ?? new object[0]));
+
+        // ===== Cascade: Khoa → Bác sĩ =====
+        // Map bác sĩ → khoa (controller serialize qua ViewBag.DoctorsByDept)
+        var doctorsByDept = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.DoctorsByDept ?? new object[0]));
+        var deptSelect = document.getElementById('departmentId');
+        var docSelect = document.getElementById('doctorId');
+
+        if (deptSelect && docSelect) {
+            // Snapshot toàn bộ option bác sĩ ban đầu — không đọc lại từ docSelect sau khi đã filter
+            var allDocOptions = Array.prototype.filter.call(docSelect.options, function (opt) { return !!opt.value; })
+                .map(function (opt) { return { value: opt.value, text: opt.text }; });
+            var placeholderHTML = '<option value="">Chọn bác sĩ</option>';
+
+            function renderDoctors(list) {
+                var html = placeholderHTML;
+                list.forEach(function (o) {
+                    html += '<option value="' + o.value + '">' + o.text + '</option>';
+                });
+                docSelect.innerHTML = html;
+            }
+
+            deptSelect.addEventListener('change', function () {
+                var deptId = this.value;
+                if (!deptId) { renderDoctors(allDocOptions); return; }
+
+                var allowedIds = doctorsByDept
+                    .filter(function (d) { return String(d.deptId) === String(deptId); })
+                    .map(function (d) { return String(d.id); });
+
+                var matched = allDocOptions.filter(function (o) { return allowedIds.indexOf(o.value) >= 0; });
+                renderDoctors(matched);
+                if (matched.length === 0) {
+                    console.warn('[appointment] Khoa ID ' + deptId + ' không có bác sĩ active. Kiểm tra DepartmentId trong bảng Doctors.');
+                }
+            });
+        }
+
+        var searchInput = document.getElementById('patientSearch');
+        var suggestBox = document.getElementById('patientSuggest');
+        var selectedBox = document.getElementById('patientSelected');
+        var selectedName = document.getElementById('patientSelectedName');
+        var selectedMeta = document.getElementById('patientSelectedMeta');
+
+        function normalize(s) {
+            if (!s) return '';
+            return s.toString().toLowerCase()
+                .normalize('NFD').replace(/[̀-ͯ]/g, '') // bỏ dấu tiếng Việt
+                .replace(/đ/g, 'd');
+        }
+
+        function renderSuggest(matches) {
+            if (!matches.length) {
+                suggestBox.innerHTML = '<div class="list-group-item text-muted" style="font-size:.86rem">Không tìm thấy bệnh nhân phù hợp. Có thể tạo bệnh nhân mới ở menu "Bệnh nhân".</div>';
+                suggestBox.style.display = 'block';
+                return;
+            }
+            suggestBox.innerHTML = matches.slice(0, 10).map(function (p) {
+                var dob = '';
+                if (p.DateOfBirth) {
+                    var d = new Date(p.DateOfBirth);
+                    if (!isNaN(d)) {
+                        dob = ' · ' + String(d.getDate()).padStart(2, '0') + '/' +
+                              String(d.getMonth() + 1).padStart(2, '0') + '/' + d.getFullYear();
+                    }
+                }
+                return '<button type="button" class="list-group-item list-group-item-action" data-cccd="'
+                    + (p.CCCD || '') + '" data-name="' + (p.FullName || '').replace(/"/g, '&quot;') + '"'
+                    + ' data-phone="' + (p.Phone || '') + '" data-gender="' + (p.Gender || '') + '" data-dob="' + dob + '">'
+                    + '<div style="font-weight:700;color:#0f172a">' + (p.FullName || '—') + '</div>'
+                    + '<div style="font-size:.82rem;color:#64748b">CCCD: ' + (p.CCCD || '—')
+                    + ' · SĐT: ' + (p.Phone || '—')
+                    + (p.Gender ? ' · ' + p.Gender : '')
+                    + dob
+                    + '</div>'
+                    + '</button>';
+            }).join('');
+            suggestBox.style.display = 'block';
+        }
+
+        searchInput.addEventListener('input', function () {
+            var q = normalize(this.value.trim());
+            if (q.length < 2) {
+                suggestBox.style.display = 'none';
+                selectedBox.style.display = 'none';
+                return;
+            }
+            var matches = patients.filter(function (p) {
+                return normalize(p.FullName).includes(q)
+                    || (p.CCCD || '').includes(q)
+                    || (p.Phone || '').includes(q);
+            });
+            renderSuggest(matches);
+        });
+
+        suggestBox.addEventListener('click', function (e) {
+            var btn = e.target.closest('button[data-cccd]');
+            if (!btn) return;
+            // Điền CCCD vào input để server tìm chính xác
+            searchInput.value = btn.getAttribute('data-cccd');
+            selectedName.textContent = btn.getAttribute('data-name');
+            selectedMeta.textContent = 'CCCD: ' + btn.getAttribute('data-cccd')
+                + ' · SĐT: ' + btn.getAttribute('data-phone')
+                + (btn.getAttribute('data-gender') ? ' · ' + btn.getAttribute('data-gender') : '')
+                + btn.getAttribute('data-dob');
+            selectedBox.style.display = 'block';
+            suggestBox.style.display = 'none';
+        });
+
+        // Ẩn suggest khi click ngoài
+        document.addEventListener('click', function (e) {
+            if (!searchInput.contains(e.target) && !suggestBox.contains(e.target)) {
+                suggestBox.style.display = 'none';
+            }
+        });
+
+        // Focus vào input → nếu đã có giá trị và match → re-show suggest
+        searchInput.addEventListener('focus', function () {
+            if (this.value.trim().length >= 2) this.dispatchEvent(new Event('input'));
+        });
+    })();
+    </script>
+}
